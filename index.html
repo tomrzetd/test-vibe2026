@@ -7,8 +7,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.4/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
     <style>
         * {
@@ -55,7 +54,6 @@
             align-items: center;
             gap: 12px;
             box-shadow: 0 0 25px rgba(0, 240, 255, 0.1), inset 0 0 10px rgba(0, 240, 255, 0.05);
-            transition: all 0.4s ease;
         }
         .hud-item .dot {
             width: 10px;
@@ -167,18 +165,20 @@
             particleLife: 70,
             glowIntensity: 1.5,
             colorSpeed: 0.02,
-            stringSmooth: 0.25, // Dipercepat agar pelacakan terasa instan & responsif
+            stringSmooth: 0.25, 
         };
 
         let capture;
+        let hands;
         let handLandmarks = [];
         let isLoaded = false;
+        let isProcessing = false; // Kunci Pengaman Thread Async
         let frameCounter = 0;
 
         let particles = [];
         const TIP_INDICES = [4, 8, 12, 16, 20];
         let smoothPoints = [[], []];
-        let prevPoints = [[], []]; // Digunakan untuk kalkulasi kecepatan ayunan tangan
+        let prevPoints = [[], []];
 
         const hudHand1 = document.getElementById('hud-hand1');
         const hudHand2 = document.getElementById('hud-hand2');
@@ -189,7 +189,7 @@
             createCanvas(windowWidth, windowHeight);
             colorMode(HSB, 360, 100, 100, 1);
             
-            // Inisialisasi posisi pelicilan gerak (Smoothing Arrays)
+            // Inisialisasi Posisi Awal Smoothing
             for (let h = 0; h < 2; h++) {
                 smoothPoints[h] = [];
                 prevPoints[h] = [];
@@ -199,14 +199,14 @@
                 }
             }
 
-            // P5 Capture Setup
+            // 1. Inisialisasi Kamera murni lewat p5.js
             capture = createCapture(VIDEO);
             capture.size(640, 480);
             capture.hide();
 
-            // Inisialisasi MediaPipe Hands
-            const hands = new Hands({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`
+            // 2. Inisialisasi MediaPipe Hands Core CDN Resmi
+            hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
             });
 
             hands.setOptions({
@@ -217,16 +217,6 @@
             });
 
             hands.onResults(onResults);
-
-            // Menggunakan MediaPipe Camera Utility resmi bawaan library
-            const camera = new Camera(capture.elt, {
-                onFrame: async () => {
-                    await hands.send({ image: capture.elt });
-                },
-                width: 640,
-                height: 480
-            });
-            camera.start();
         }
 
         function onResults(results) {
@@ -235,6 +225,7 @@
                 document.getElementById('loading').classList.add('hidden');
             }
             handLandmarks = results.multiHandLandmarks || [];
+            isProcessing = false; // Buka kembali kunci prapemrosesan frame
         }
 
         // ---- Particle Engine Super Glow ----
@@ -262,7 +253,7 @@
                 const p = particles[i];
                 p.x += p.vx;
                 p.y += p.vy;
-                p.vx *= 0.96; // Gesekan udara halus
+                p.vx *= 0.96; 
                 p.vy *= 0.96;
                 p.life -= 1;
                 if (p.life <= 0) {
@@ -284,19 +275,27 @@
                 fill(p.hue, 95, 100, alpha);
                 circle(p.x, p.y, currentSize);
             }
-            drawingContext.shadowBlur = 0; // Reset wajib p5
+            drawingContext.shadowBlur = 0; 
         }
 
         // ---- Main Render Loop ----
         function draw() {
             frameCounter++;
-            background(240, 40, 4, 1); // Ruang gelap cyberpunk bening
+            background(240, 40, 4, 1);
 
-            // Proteksi pembagian nilai nol aman & render background feed digital
-            if (capture && capture.width > 0 && capture.loadedmetadata) {
+            // Validasi apakah metadata kamera p5.js sudah siap digunakan
+            if (capture && capture.elt && capture.elt.readyState === 4) {
+                
+                // PIPING: Kirim data frame video p5 ke MediaPipe secara aman tanpa tumpang tindih
+                if (!isProcessing) {
+                    isProcessing = true;
+                    hands.send({ image: capture.elt }).catch(() => { isProcessing = false; });
+                }
+
+                // Gambar Latar Belakang Kamera Efek Cermin
                 push();
                 translate(width, 0);
-                scale(-1, 1); // Efek Cermin
+                scale(-1, 1); 
 
                 const vRatio = capture.width / capture.height;
                 const cRatio = width / height;
@@ -309,12 +308,11 @@
                     dx = 0; dy = (height - dh) / 2;
                 }
                 
-                // Berikan filter visual kegelapan matriks pada kamera agar efek neon menonjol
-                tint(200, 70, 20, 0.4); 
+                tint(200, 70, 20, 0.35); 
                 image(capture, dx, dy, dw, dh);
                 pop();
 
-                // Cyber Grid & Scanline Effect
+                // Efek Scanline Cyberpunk Grid
                 stroke(190, 100, 30, 0.04);
                 strokeWeight(1);
                 for (let i = 0; i < height; i += 6) {
@@ -322,13 +320,12 @@
                 }
             }
 
-            // Pemrosesan Inti Core Hand & Cradle
             drawHandsAndStrings();
             drawParticles();
             updateParticles();
             updateHUD();
 
-            // Status Bar Handler
+            // Status Hubungan UI
             if (handLandmarks.length === 2) {
                 statusEl.innerHTML = '⚡ <span class="highlight">CRADLE NYALA</span> · Energi Stabil';
             } else if (handLandmarks.length === 1) {
@@ -348,10 +345,9 @@
 
             const hueBase = (frameCounter * 1.5) % 360;
 
-            // Loop Gambar Sendi & Kalkulasi Kecepatan
             for (let h = 0; h < handLandmarks.length; h++) {
                 const landmarks = handLandmarks[h];
-                const handHue = (hueBase + (h * 180)) % 360; // Tangan kiri & kanan punya warna kontras berseberangan
+                const handHue = (hueBase + (h * 180)) % 360; 
 
                 for (let j = 0; j < landmarks.length; j++) {
                     const pt = getCoords(landmarks[j]);
@@ -359,23 +355,20 @@
                     
                     if (isTip) {
                         const fIdx = TIP_INDICES.indexOf(j);
-                        // Ambil posisi terdahulu
                         const prev = prevPoints[h][fIdx];
-                        // Hitung Kecepatan Ayunan Tangan (Velocity)
                         const velocity = dist(pt.x, pt.y, prev.x, prev.y);
 
-                        // Ledakan partikel ekstra jika tangan digerakkan secara responsif (cepat)
+                        // Ledakan partikel adaptif saat tangan digerakkan cepat
                         if (velocity > 12) {
                             emitParticles(pt.x, pt.y, handHue, velocity * 0.15, 4);
                         } else if (frameCounter % 2 === 0) {
                             emitParticles(pt.x, pt.y, handHue, 0.5, 1);
                         }
 
-                        // Simpan koordinat saat ini untuk kalkulasi frame berikutnya
                         prevPoints[h][fIdx] = { x: pt.x, y: pt.y };
                     }
 
-                    // Render Sendi Glowing Berpendar
+                    // Render Sendi Neon Berpendar
                     drawingContext.shadowBlur = (isTip ? 25 : 10) * CONFIG.glowIntensity;
                     drawingContext.shadowColor = `hsla(${handHue}, 100%, 60%, 0.8)`;
                     noStroke();
@@ -383,7 +376,7 @@
                     circle(pt.x, pt.y, isTip ? 12 : 6);
                 }
 
-                // Terapkan Interpolasi Linear (Lerp) agar gerak senar halus bebas patah-patah
+                // Interpolasi Linear (Lerp) untuk kelancaran gerak senar
                 for (let f = 0; f < TIP_INDICES.length; f++) {
                     const idx = TIP_INDICES[f];
                     const raw = getCoords(landmarks[idx]);
@@ -395,7 +388,7 @@
                 }
             }
 
-            // ---- RAJUTAN SENAR CRADLE (Ketika 2 Tangan Aktif) ----
+            // ---- RAJUTAN JARING CRADLE PLASMATA ----
             if (handLandmarks.length === 2) {
                 const h1Hue = hueBase;
                 const h2Hue = (hueBase + 180) % 360;
@@ -407,13 +400,13 @@
                     const d = dist(p1.x, p1.y, p2.x, p2.y);
                     const mixHue = lerp(h1Hue, h2Hue, 0.5);
 
-                    // Efek Senar Plasma Bergetar Aktual (Vibrating String)
+                    // Pengaturan ketebalan & pendaran tali plasma bermuatan listrik
                     drawingContext.shadowBlur = 30 * CONFIG.glowIntensity;
                     drawingContext.shadowColor = `hsla(${mixHue}, 100%, 50%, 0.65)`;
                     stroke(mixHue, 95, 100, 0.85);
                     strokeWeight(map(d, 50, 600, 6, 1.5, true));
                     
-                    // Render Senar Bergelombang Menggunakan Teknik Gelombang Sinus Per-Segmen
+                    // Membuat efek senar bergetar (sinusoidal wave)
                     noFill();
                     beginShape();
                     const segments = 12;
@@ -422,7 +415,6 @@
                         let sx = lerp(p1.x, p2.x, t);
                         let sy = lerp(p1.y, p2.y, t);
                         
-                        // Kalkulasi Perpendicular Offset untuk Gelombang Getar Plasma
                         let angle = atan2(p2.y - p1.y, p2.x - p1.x) + HALF_PI;
                         let wave = sin(t * PI + frameCounter * 0.3) * 6 * sin(frameCounter * 0.04);
                         sx += cos(angle) * wave;
@@ -431,7 +423,7 @@
                     }
                     endShape();
 
-                    // Energy Bead (Butiran Inti Cahaya Mengalir di Jalur Senar)
+                    // Inti Energi Mengalir (Beads Tracker)
                     let beadProgress = (frameCounter * 0.015 + (i * 0.2)) % 1.0;
                     let bx = lerp(p1.x, p2.x, beadProgress);
                     let by = lerp(p1.y, p2.y, beadProgress);
@@ -441,7 +433,7 @@
                     fill(0, 0, 100, 1);
                     circle(bx, by, 8);
 
-                    // Hubungkan Tali Silang (Cross Weave) Otomatis Antar Jari Tetangga
+                    // Anyaman Silang Otomatis (Cross Weave)
                     const nextIdx = (i + 1) % TIP_INDICES.length;
                     const p2next = smoothPoints[1][nextIdx];
                     
@@ -453,7 +445,6 @@
             drawingContext.shadowBlur = 0;
         }
 
-        // ---- Pembaruan Status Nilai UI ----
         function updateHUD() {
             const count = handLandmarks.length;
             if (count >= 1) {
@@ -472,7 +463,6 @@
                 hudHand2.style.color = "#fff";
             }
 
-            // Total kalkulasi kalkulasi aktif senar jaring terpasang
             hudStrings.textContent = count === 2 ? "15 JALUR PLASMA" : count === 1 ? "0 REAKSI" : "0";
         }
 
