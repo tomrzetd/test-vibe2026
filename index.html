@@ -1,22 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Neon Cat's Cradle · Hand Tracking</title>
+    <title>Neon Cat's Cradle · Hyper-Glow Edition</title>
 
-    <!-- p5.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js">
-    </script>
-    <!-- MediaPipe -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous">
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.4/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js" crossorigin="anonymous"></script>
 
     <style>
         * {
@@ -26,340 +18,241 @@
         }
         body {
             overflow: hidden;
-            background: #0a0a12;
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-            cursor: none;
+            background: #040408;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            cursor: crosshair;
         }
         canvas {
             display: block;
         }
 
-        /* ---- HUD Overlay ---- */
+        /* ---- Cyber HUD Overlay ---- */
         #hud {
             position: fixed;
-            bottom: 32px;
-            left: 0;
-            width: 100%;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
             pointer-events: none;
             z-index: 20;
             display: flex;
-            justify-content: center;
-            gap: 40px;
+            gap: 20px;
             flex-wrap: wrap;
             padding: 0 20px;
+            width: 100%;
+            justify-content: center;
         }
         .hud-item {
-            background: rgba(10, 10, 18, 0.55);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 48px;
-            padding: 10px 24px;
-            font-size: 13px;
-            letter-spacing: 0.5px;
-            color: rgba(255, 255, 255, 0.7);
+            background: rgba(6, 6, 14, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 16px;
+            padding: 12px 24px;
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.8);
             display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-            user-select: none;
-            font-weight: 400;
-            transition: opacity 0.6s ease;
+            gap: 12px;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.1), inset 0 0 10px rgba(0, 240, 255, 0.05);
+            transition: all 0.4s ease;
         }
         .hud-item .dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             display: inline-block;
-            animation: pulse-dot 1.8s ease-in-out infinite;
+            animation: pulse-dot 1.5s ease-in-out infinite;
         }
-        .hud-item .dot.cyan {
-            background: #00f0ff;
-            box-shadow: 0 0 12px #00f0ff88;
-        }
-        .hud-item .dot.magenta {
-            background: #ff00e6;
-            box-shadow: 0 0 12px #ff00e688;
-        }
-        .hud-item .dot.green {
-            background: #39ff14;
-            box-shadow: 0 0 12px #39ff1488;
-        }
+        .hud-item .dot.cyan { background: #00f0ff; box-shadow: 0 0 15px #00f0ff; }
+        .hud-item .dot.magenta { background: #ff0077; box-shadow: 0 0 15px #ff0077; }
+        .hud-item .dot.green { background: #39ff14; box-shadow: 0 0 15px #39ff14; }
+        
         .hud-item .label {
-            opacity: 0.6;
-            font-weight: 300;
-            font-size: 11px;
+            opacity: 0.5;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            font-size: 10px;
         }
         .hud-item .value {
-            font-weight: 600;
+            font-weight: 700;
             color: #fff;
-            font-size: 14px;
+            font-family: monospace;
+            font-size: 15px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
         }
 
         #status {
             position: fixed;
-            top: 28px;
+            top: 24px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 20;
-            background: rgba(10, 10, 18, 0.5);
+            background: rgba(6, 6, 14, 0.7);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 40px;
-            padding: 8px 28px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 12px;
-            letter-spacing: 1px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 10px 30px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            font-weight: 300;
+            font-weight: 600;
             pointer-events: none;
-            transition: all 0.8s ease;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         #status .highlight {
             color: #00f0ff;
-            font-weight: 500;
-            text-shadow: 0 0 20px #00f0ff44;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
         }
 
         @keyframes pulse-dot {
-            0%,
-            100% {
-                opacity: 0.4;
-                transform: scale(0.85);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.2);
-            }
+            0%, 100% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.3); opacity: 1; }
         }
 
         #loading {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #0a0a12;
-            z-index: 100;
-            transition: opacity 1s ease;
-            pointer-events: none;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: #05050a; z-index: 100; transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        #loading.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        #loading .spinner {
-            width: 48px;
-            height: 48px;
-            border: 2px solid rgba(0, 240, 255, 0.1);
-            border-top-color: #00f0ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 28px;
-            box-shadow: 0 0 40px #00f0ff22;
+        #loading.hidden { opacity: 0; pointer-events: none; }
+        
+        .spinner {
+            width: 64px; height: 64px;
+            border: 3px solid rgba(0, 240, 255, 0.05);
+            border-top-color: #00f0ff; border-bottom-color: #ff0077;
+            border-radius: 50%; animation: spin 1s cubic-bezier(0.6, 0.2, 0.2, 0.8) infinite;
+            margin-bottom: 24px; filter: drop-shadow(0 0 15px rgba(0,240,255,0.4));
         }
         #loading p {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 13px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            font-weight: 300;
+            color: rgba(255, 255, 255, 0.6); font-size: 11px; letter-spacing: 5px; text-transform: uppercase;
         }
-        #loading p span {
-            color: #00f0ff;
-            text-shadow: 0 0 20px #00f0ff44;
-        }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        @media (max-width: 640px) {
-            #hud {
-                gap: 12px;
-                bottom: 18px;
-            }
-            .hud-item {
-                padding: 6px 14px;
-                font-size: 11px;
-                border-radius: 32px;
-            }
-            .hud-item .label {
-                font-size: 9px;
-            }
-            .hud-item .value {
-                font-size: 12px;
-            }
-            #status {
-                font-size: 10px;
-                padding: 6px 18px;
-                top: 16px;
-            }
-        }
+        #loading p span { color: #00f0ff; font-weight: bold; }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <!-- LOADING -->
     <div id="loading">
         <div class="spinner"></div>
-        <p>Initializing <span>Neon Cradle</span></p>
+        <p>Menghubungkan <span>Neon Plasma Matrix</span></p>
     </div>
 
-    <!-- STATUS BAR -->
-    <div id="status">⏳ <span class="highlight">waiting</span> for hands</div>
+    <div id="status">⚡ <span class="highlight">Menginisialisasi Kamera</span></div>
 
-    <!-- HUD -->
     <div id="hud">
         <div class="hud-item">
             <span class="dot cyan"></span>
-            <span class="label">Hand 1</span>
+            <span class="label">Tangan L</span>
             <span class="value" id="hud-hand1">—</span>
         </div>
         <div class="hud-item">
             <span class="dot magenta"></span>
-            <span class="label">Hand 2</span>
+            <span class="label">Tangan R</span>
             <span class="value" id="hud-hand2">—</span>
         </div>
         <div class="hud-item">
             <span class="dot green"></span>
-            <span class="label">Strings</span>
+            <span class="label">Energi Plasma</span>
             <span class="value" id="hud-strings">0</span>
         </div>
     </div>
 
     <script>
-        // ============================================================
-        //  CONFIG
-        // ============================================================
         const CONFIG = {
-            maxParticles: 160,
-            particleLife: 90,
-            glowIntensity: 0.8,
-            colorSpeed: 0.012,
-            pulseSpeed: 0.025,
-            stringSmooth: 0.15,
+            maxParticles: 300,
+            particleLife: 70,
+            glowIntensity: 1.5,
+            colorSpeed: 0.02,
+            stringSmooth: 0.25, // Dipercepat agar pelacakan terasa instan & responsif
         };
 
-        // ============================================================
-        //  STATE
-        // ============================================================
         let capture;
         let handLandmarks = [];
         let isLoaded = false;
-        let frameCount = 0;
-        let time = 0;
+        let frameCounter = 0;
 
-        // Particles
         let particles = [];
-
-        // Finger tip indices
         const TIP_INDICES = [4, 8, 12, 16, 20];
-        const FINGER_NAMES = ['thumb', 'index', 'middle', 'ring', 'pinky'];
+        let smoothPoints = [[], []];
+        let prevPoints = [[], []]; // Digunakan untuk kalkulasi kecepatan ayunan tangan
 
-        // Smoothing for string endpoints
-        let smoothPoints = [
-            [],
-            []
-        ]; // [handIndex][fingerIndex] = {x, y}
-
-        // HUD elements
         const hudHand1 = document.getElementById('hud-hand1');
         const hudHand2 = document.getElementById('hud-hand2');
         const hudStrings = document.getElementById('hud-strings');
         const statusEl = document.getElementById('status');
 
-        // ============================================================
-        //  SETUP
-        // ============================================================
         function setup() {
             createCanvas(windowWidth, windowHeight);
             colorMode(HSB, 360, 100, 100, 1);
-            pixelDensity(1);
-
-            // Init smoothing arrays
+            
+            // Inisialisasi posisi pelicilan gerak (Smoothing Arrays)
             for (let h = 0; h < 2; h++) {
                 smoothPoints[h] = [];
+                prevPoints[h] = [];
                 for (let f = 0; f < TIP_INDICES.length; f++) {
                     smoothPoints[h][f] = { x: width / 2, y: height / 2 };
+                    prevPoints[h][f] = { x: width / 2, y: height / 2 };
                 }
             }
 
-            // Start camera
-            capture = createCapture(VIDEO, () => {
-                const hands = new Hands({
-                    locateFile: (file) =>
-                        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-                });
-
-                hands.setOptions({
-                    maxNumHands: 2,
-                    modelComplexity: 1,
-                    minDetectionConfidence: 0.7,
-                    minTrackingConfidence: 0.7,
-                });
-
-                hands.onResults(onResults);
-
-                async function feed() {
-                    if (capture.elt.readyState >= 2) {
-                        await hands.send({ image: capture.elt });
-                    }
-                    requestAnimationFrame(feed);
-                }
-                feed();
-            });
-
+            // P5 Capture Setup
+            capture = createCapture(VIDEO);
+            capture.size(640, 480);
             capture.hide();
 
-            // Hide loading after a moment (fallback)
-            setTimeout(() => {
-                document.getElementById('loading').classList.add('hidden');
-            }, 3000);
+            // Inisialisasi MediaPipe Hands
+            const hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`
+            });
+
+            hands.setOptions({
+                maxNumHands: 2,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.6,
+                minTrackingConfidence: 0.6
+            });
+
+            hands.onResults(onResults);
+
+            // Menggunakan MediaPipe Camera Utility resmi bawaan library
+            const camera = new Camera(capture.elt, {
+                onFrame: async () => {
+                    await hands.send({ image: capture.elt });
+                },
+                width: 640,
+                height: 480
+            });
+            camera.start();
         }
 
-        // ============================================================
-        //  MEDIAPIPE CALLBACK
-        // ============================================================
         function onResults(results) {
-            if (!isLoaded && results?.multiHandLandmarks) {
+            if (!isLoaded) {
                 isLoaded = true;
                 document.getElementById('loading').classList.add('hidden');
-                statusEl.innerHTML = '✋ <span class="highlight">ready</span> · show your hands';
             }
             handLandmarks = results.multiHandLandmarks || [];
         }
 
-        // ============================================================
-        //  PARTICLE SYSTEM
-        // ============================================================
-        function emitParticles(x, y, colorHue, count = 2) {
+        // ---- Particle Engine Super Glow ----
+        function emitParticles(x, y, colorHue, speedMultiplier = 1, count = 2) {
             for (let i = 0; i < count; i++) {
                 if (particles.length >= CONFIG.maxParticles) {
                     particles.shift();
                 }
                 const angle = random(TWO_PI);
-                const speed = random(0.6, 2.2);
+                const speed = random(1.5, 4.5) * speedMultiplier;
                 particles.push({
-                    x,
-                    y,
-                    vx: cos(angle) * speed * random(0.5, 1.2),
-                    vy: sin(angle) * speed * random(0.5, 1.2),
-                    life: CONFIG.particleLife * random(0.5, 1.0),
+                    x, y,
+                    vx: cos(angle) * speed,
+                    vy: sin(angle) * speed,
+                    life: CONFIG.particleLife * random(0.6, 1.2),
                     maxLife: CONFIG.particleLife,
-                    size: random(2, 6),
-                    hue: colorHue + random(-8, 8),
-                    sat: 90 + random(-10, 10),
-                    bri: 90 + random(-10, 10),
+                    size: random(3, 7),
+                    hue: (colorHue + random(-15, 15)) % 360,
                 });
             }
         }
@@ -369,105 +262,82 @@
                 const p = particles[i];
                 p.x += p.vx;
                 p.y += p.vy;
-                p.vx *= 0.985;
-                p.vy *= 0.985;
+                p.vx *= 0.96; // Gesekan udara halus
+                p.vy *= 0.96;
                 p.life -= 1;
-                p.size *= 0.997;
-                if (p.life <= 0 || p.size < 0.3) {
+                if (p.life <= 0) {
                     particles.splice(i, 1);
                 }
             }
         }
 
         function drawParticles() {
-            noStroke();
             for (const p of particles) {
-                const alpha = map(p.life, 0, p.maxLife, 0, 0.9);
-                const glow = map(p.life, 0, p.maxLife, 2, 18);
-                drawingContext.shadowBlur = glow;
-                drawingContext.shadowColor = `hsla(${p.hue}, 100%, 70%, ${alpha * 0.6})`;
-                fill(p.hue, p.sat, p.bri, alpha);
-                circle(p.x, p.y, p.size * 1.6);
+                const progress = p.life / p.maxLife;
+                const alpha = map(progress, 0, 1, 0, 1);
+                const currentSize = p.size * progress;
+
+                drawingContext.shadowBlur = currentSize * 3 * CONFIG.glowIntensity;
+                drawingContext.shadowColor = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
+                
+                noStroke();
+                fill(p.hue, 95, 100, alpha);
+                circle(p.x, p.y, currentSize);
             }
-            drawingContext.shadowBlur = 0;
+            drawingContext.shadowBlur = 0; // Reset wajib p5
         }
 
-        // ============================================================
-        //  DRAW
-        // ============================================================
+        // ---- Main Render Loop ----
         function draw() {
-            time += CONFIG.colorSpeed;
-            frameCount++;
+            frameCounter++;
+            background(240, 40, 4, 1); // Ruang gelap cyberpunk bening
 
-            // ---- background ----
-            background(10, 10, 18);
-
-            // ---- video with dark overlay ----
-            if (capture?.loadedmetadata) {
+            // Proteksi pembagian nilai nol aman & render background feed digital
+            if (capture && capture.width > 0 && capture.loadedmetadata) {
                 push();
                 translate(width, 0);
-                scale(-1, 1);
+                scale(-1, 1); // Efek Cermin
 
                 const vRatio = capture.width / capture.height;
                 const cRatio = width / height;
                 let dw, dh, dx, dy;
                 if (vRatio > cRatio) {
-                    dh = height;
-                    dw = height * vRatio;
-                    dx = (width - dw) / 2;
-                    dy = 0;
+                    dh = height; dw = height * vRatio;
+                    dx = (width - dw) / 2; dy = 0;
                 } else {
-                    dw = width;
-                    dh = width / vRatio;
-                    dx = 0;
-                    dy = (height - dh) / 2;
+                    dw = width; dh = width / vRatio;
+                    dx = 0; dy = (height - dh) / 2;
                 }
+                
+                // Berikan filter visual kegelapan matriks pada kamera agar efek neon menonjol
+                tint(200, 70, 20, 0.4); 
                 image(capture, dx, dy, dw, dh);
                 pop();
 
-                // vignette + dark overlay
-                fill(10, 10, 18, 190);
-                noStroke();
-                rect(0, 0, width, height);
-
-                // subtle radial vignette
-                const grad = drawingContext.createRadialGradient(
-                    width / 2, height / 2, height * 0.2,
-                    width / 2, height / 2, height * 0.9
-                );
-                grad.addColorStop(0, 'rgba(10,10,18,0)');
-                grad.addColorStop(1, 'rgba(10,10,18,0.5)');
-                drawingContext.fillStyle = grad;
-                drawingContext.fillRect(0, 0, width, height);
+                // Cyber Grid & Scanline Effect
+                stroke(190, 100, 30, 0.04);
+                strokeWeight(1);
+                for (let i = 0; i < height; i += 6) {
+                    line(0, i, width, i);
+                }
             }
 
-            // ---- draw strings & hands ----
+            // Pemrosesan Inti Core Hand & Cradle
             drawHandsAndStrings();
-
-            // ---- particles ----
             drawParticles();
             updateParticles();
-
-            // ---- HUD update ----
             updateHUD();
 
-            // ---- status ----
+            // Status Bar Handler
             if (handLandmarks.length === 2) {
-                statusEl.innerHTML = '✦ <span class="highlight">cradle</span> active · ' +
-                    handLandmarks.length + ' hands';
+                statusEl.innerHTML = '⚡ <span class="highlight">CRADLE NYALA</span> · Energi Stabil';
             } else if (handLandmarks.length === 1) {
-                statusEl.innerHTML = '✋ 1 hand · show <span class="highlight">both</span> for cradle';
+                statusEl.innerHTML = '✋ 1 Tangan Terdeteksi · Hadapkan <span class="highlight">Kedua Tangan</span>';
             } else {
-                statusEl.innerHTML = '✋ <span class="highlight">show</span> your hands';
+                statusEl.innerHTML = '👋 Hubungkan <span class="highlight">Tangan Anda</span> ke Kamera';
             }
-
-            // ---- reset shadow ----
-            drawingContext.shadowBlur = 0;
         }
 
-        // ============================================================
-        //  CORE DRAWING
-        // ============================================================
         function drawHandsAndStrings() {
             if (!handLandmarks.length) return;
 
@@ -476,171 +346,138 @@
                 y: lm.y * height,
             });
 
-            const hueBase = (frameCount * CONFIG.colorSpeed) % 360;
+            const hueBase = (frameCounter * 1.5) % 360;
 
-            // ---- draw joints & emit particles ----
+            // Loop Gambar Sendi & Kalkulasi Kecepatan
             for (let h = 0; h < handLandmarks.length; h++) {
                 const landmarks = handLandmarks[h];
-                const hueOffset = h === 0 ? 0 : 180;
-                const hue = (hueBase + hueOffset) % 360;
+                const handHue = (hueBase + (h * 180)) % 360; // Tangan kiri & kanan punya warna kontras berseberangan
 
                 for (let j = 0; j < landmarks.length; j++) {
                     const pt = getCoords(landmarks[j]);
                     const isTip = TIP_INDICES.includes(j);
-                    const size = isTip ? 7 : 4;
-                    const pulse = 1 + 0.25 * sin(frameCount * CONFIG.pulseSpeed + j * 0.7 + h * 1.2);
+                    
+                    if (isTip) {
+                        const fIdx = TIP_INDICES.indexOf(j);
+                        // Ambil posisi terdahulu
+                        const prev = prevPoints[h][fIdx];
+                        // Hitung Kecepatan Ayunan Tangan (Velocity)
+                        const velocity = dist(pt.x, pt.y, prev.x, prev.y);
 
-                    // glow
-                    const glowSize = isTip ? 28 : 14;
-                    drawingContext.shadowBlur = glowSize * pulse * CONFIG.glowIntensity;
-                    drawingContext.shadowColor = `hsla(${hue}, 90%, 70%, 0.7)`;
+                        // Ledakan partikel ekstra jika tangan digerakkan secara responsif (cepat)
+                        if (velocity > 12) {
+                            emitParticles(pt.x, pt.y, handHue, velocity * 0.15, 4);
+                        } else if (frameCounter % 2 === 0) {
+                            emitParticles(pt.x, pt.y, handHue, 0.5, 1);
+                        }
 
-                    // dot
-                    noStroke();
-                    fill(hue, 85, 95, 0.92);
-                    circle(pt.x, pt.y, size * pulse * 1.2);
-
-                    // inner highlight
-                    drawingContext.shadowBlur = 0;
-                    fill(255, 255, 255, 0.25);
-                    circle(pt.x - 1.2, pt.y - 1.2, size * pulse * 0.4);
-
-                    // emit particles from tips
-                    if (isTip && frameCount % 3 === 0) {
-                        emitParticles(pt.x, pt.y, hue, 1);
+                        // Simpan koordinat saat ini untuk kalkulasi frame berikutnya
+                        prevPoints[h][fIdx] = { x: pt.x, y: pt.y };
                     }
+
+                    // Render Sendi Glowing Berpendar
+                    drawingContext.shadowBlur = (isTip ? 25 : 10) * CONFIG.glowIntensity;
+                    drawingContext.shadowColor = `hsla(${handHue}, 100%, 60%, 0.8)`;
+                    noStroke();
+                    fill(handHue, 90, 100, 0.9);
+                    circle(pt.x, pt.y, isTip ? 12 : 6);
                 }
 
-                // ---- smooth finger positions ----
+                // Terapkan Interpolasi Linear (Lerp) agar gerak senar halus bebas patah-patah
                 for (let f = 0; f < TIP_INDICES.length; f++) {
                     const idx = TIP_INDICES[f];
                     const raw = getCoords(landmarks[idx]);
-                    const prev = smoothPoints[h][f] || { x: raw.x, y: raw.y };
+                    const currentSmooth = smoothPoints[h][f];
                     smoothPoints[h][f] = {
-                        x: lerp(prev.x, raw.x, CONFIG.stringSmooth),
-                        y: lerp(prev.y, raw.y, CONFIG.stringSmooth),
+                        x: lerp(currentSmooth.x, raw.x, CONFIG.stringSmooth),
+                        y: lerp(currentSmooth.y, raw.y, CONFIG.stringSmooth),
                     };
                 }
             }
 
-            // ---- draw strings (cat's cradle) ----
+            // ---- RAJUTAN SENAR CRADLE (Ketika 2 Tangan Aktif) ----
             if (handLandmarks.length === 2) {
-                const hue1 = (hueBase + 0) % 360;
-                const hue2 = (hueBase + 180) % 360;
+                const h1Hue = hueBase;
+                const h2Hue = (hueBase + 180) % 360;
 
                 for (let i = 0; i < TIP_INDICES.length; i++) {
                     const p1 = smoothPoints[0][i];
                     const p2 = smoothPoints[1][i];
 
-                    // distance-based thickness & color
                     const d = dist(p1.x, p1.y, p2.x, p2.y);
-                    const thickness = map(d, 40, 550, 5.5, 0.8, true);
+                    const mixHue = lerp(h1Hue, h2Hue, 0.5);
 
-                    // color blend between hand1 & hand2 hues
-                    const mix = map(d, 80, 450, 0, 1, true);
-                    const hueMix = lerp(hue1, hue2, mix);
-                    const sat = 80 + 20 * sin(frameCount * 0.015 + i * 0.9);
-                    const bri = 85 + 15 * sin(frameCount * 0.02 + i * 1.1 + 0.5);
-
-                    // pulsating glow
-                    const glowPulse = 0.6 + 0.4 * sin(frameCount * CONFIG.pulseSpeed * 0.7 + i * 1.3);
-                    drawingContext.shadowBlur = 28 * glowPulse * CONFIG.glowIntensity;
-                    drawingContext.shadowColor = `hsla(${hueMix}, 90%, 70%, 0.6)`;
-
-                    // main line
-                    stroke(hueMix, sat, bri, 0.85);
-                    strokeWeight(thickness);
-                    line(p1.x, p1.y, p2.x, p2.y);
-
-                    // secondary glow line (thinner, brighter)
-                    drawingContext.shadowBlur = 45 * glowPulse;
-                    drawingContext.shadowColor = `hsla(${(hueMix + 20) % 360}, 100%, 80%, 0.25)`;
-                    stroke(hueMix, sat, bri + 10, 0.3);
-                    strokeWeight(thickness * 0.35);
-                    line(p1.x, p1.y, p2.x, p2.y);
-
-                    // ---- weave: cross-connect to next finger ----
-                    const nextIdx = (i + 1) % TIP_INDICES.length;
-                    const p1next = smoothPoints[0][nextIdx];
-                    const p2next = smoothPoints[1][nextIdx];
-
-                    const d2 = dist(p1.x, p1.y, p2next.x, p2next.y);
-                    if (d2 < 500) {
-                        const t2 = map(d2, 40, 450, 3.0, 0.4, true);
-                        const mix2 = map(d2, 80, 400, 0, 1, true);
-                        const hueMix2 = lerp((hue1 + 30) % 360, (hue2 + 30) % 360, mix2);
-
-                        drawingContext.shadowBlur = 16 * glowPulse * CONFIG.glowIntensity;
-                        drawingContext.shadowColor = `hsla(${hueMix2}, 80%, 70%, 0.35)`;
-                        stroke(hueMix2, 70, 80, 0.35);
-                        strokeWeight(t2);
-                        line(p1.x, p1.y, p2next.x, p2next.y);
-
-                        // second cross
-                        const p1prev = smoothPoints[0][(i + TIP_INDICES.length - 1) % TIP_INDICES.length];
-                        const p2prev = smoothPoints[1][(i + TIP_INDICES.length - 1) % TIP_INDICES.length];
-                        const d3 = dist(p1prev.x, p1prev.y, p2.x, p2.y);
-                        if (d3 < 500) {
-                            const t3 = map(d3, 40, 450, 2.5, 0.3, true);
-                            const mix3 = map(d3, 80, 400, 0, 1, true);
-                            const hueMix3 = lerp((hue1 + 60) % 360, (hue2 + 60) % 360, mix3);
-                            drawingContext.shadowBlur = 12 * glowPulse * CONFIG.glowIntensity;
-                            drawingContext.shadowColor = `hsla(${hueMix3}, 70%, 70%, 0.2)`;
-                            stroke(hueMix3, 60, 75, 0.25);
-                            strokeWeight(t3);
-                            line(p1prev.x, p1prev.y, p2.x, p2.y);
-                        }
+                    // Efek Senar Plasma Bergetar Aktual (Vibrating String)
+                    drawingContext.shadowBlur = 30 * CONFIG.glowIntensity;
+                    drawingContext.shadowColor = `hsla(${mixHue}, 100%, 50%, 0.65)`;
+                    stroke(mixHue, 95, 100, 0.85);
+                    strokeWeight(map(d, 50, 600, 6, 1.5, true));
+                    
+                    // Render Senar Bergelombang Menggunakan Teknik Gelombang Sinus Per-Segmen
+                    noFill();
+                    beginShape();
+                    const segments = 12;
+                    for (let s = 0; s <= segments; s++) {
+                        let t = s / segments;
+                        let sx = lerp(p1.x, p2.x, t);
+                        let sy = lerp(p1.y, p2.y, t);
+                        
+                        // Kalkulasi Perpendicular Offset untuk Gelombang Getar Plasma
+                        let angle = atan2(p2.y - p1.y, p2.x - p1.x) + HALF_PI;
+                        let wave = sin(t * PI + frameCounter * 0.3) * 6 * sin(frameCounter * 0.04);
+                        sx += cos(angle) * wave;
+                        sy += sin(angle) * wave;
+                        vertex(sx, sy);
                     }
+                    endShape();
+
+                    // Energy Bead (Butiran Inti Cahaya Mengalir di Jalur Senar)
+                    let beadProgress = (frameCounter * 0.015 + (i * 0.2)) % 1.0;
+                    let bx = lerp(p1.x, p2.x, beadProgress);
+                    let by = lerp(p1.y, p2.y, beadProgress);
+                    
+                    drawingContext.shadowBlur = 20;
+                    drawingContext.shadowColor = '#ffffff';
+                    fill(0, 0, 100, 1);
+                    circle(bx, by, 8);
+
+                    // Hubungkan Tali Silang (Cross Weave) Otomatis Antar Jari Tetangga
+                    const nextIdx = (i + 1) % TIP_INDICES.length;
+                    const p2next = smoothPoints[1][nextIdx];
+                    
+                    stroke((mixHue + 40) % 360, 90, 90, 0.3);
+                    strokeWeight(1);
+                    line(p1.x, p1.y, p2next.x, p2next.y);
                 }
             }
-
             drawingContext.shadowBlur = 0;
         }
 
-        // ============================================================
-        //  HUD UPDATE
-        // ============================================================
+        // ---- Pembaruan Status Nilai UI ----
         function updateHUD() {
             const count = handLandmarks.length;
             if (count >= 1) {
-                const h1 = handLandmarks[0];
-                const wrist1 = h1[0];
-                hudHand1.textContent = `✋ ${Math.round(wrist1.x * 100)}%`;
+                hudHand1.textContent = `ONLINE`;
+                hudHand1.style.color = "#00f0ff";
             } else {
                 hudHand1.textContent = '—';
+                hudHand1.style.color = "#fff";
             }
+            
             if (count >= 2) {
-                const h2 = handLandmarks[1];
-                const wrist2 = h2[0];
-                hudHand2.textContent = `✋ ${Math.round(wrist2.x * 100)}%`;
+                hudHand2.textContent = `ONLINE`;
+                hudHand2.style.color = "#ff0077";
             } else {
                 hudHand2.textContent = '—';
+                hudHand2.style.color = "#fff";
             }
 
-            const stringCount = count === 2 ? TIP_INDICES.length * 3 : 0;
-            hudStrings.textContent = stringCount;
+            // Total kalkulasi kalkulasi aktif senar jaring terpasang
+            hudStrings.textContent = count === 2 ? "15 JALUR PLASMA" : count === 1 ? "0 REAKSI" : "0";
         }
 
-        // ============================================================
-        //  RESIZE
-        // ============================================================
         function windowResized() {
             resizeCanvas(windowWidth, windowHeight);
-        }
-
-        // ============================================================
-        //  KEYBOARD SHORTCUTS (fun)
-        // ============================================================
-        function keyPressed() {
-            if (key === 'r' || key === 'R') {
-                // reset particles
-                particles = [];
-            }
-            if (key === 'f' || key === 'F') {
-                // toggle fullscreen
-                const fs = fullscreen();
-                fullscreen(!fs);
-            }
         }
     </script>
 </body>
