@@ -1,474 +1,792 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Neon Cat's Cradle · Hyper-Glow Edition</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#071d22">
+<title>Lab Misteri Pak Taro — IFP Multitouch + Vision AI</title>
+<style>
+:root{
+  --bg:#061b1f; --panel:#0d2a30; --panel2:#12343b; --ink:#effcf8; --muted:#a8c9c6;
+  --mint:#66e3c4; --cyan:#5ed7ff; --gold:#ffd56a; --pink:#ff6f91; --red:#ff5e67;
+  --ok:#4ade80; --line:rgba(255,255,255,.12); --shadow:0 18px 60px rgba(0,0,0,.35);
+  --touch:72px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+body{touch-action:none;overscroll-behavior:none;background:
+ radial-gradient(circle at 12% 14%,rgba(102,227,196,.14),transparent 28%),
+ radial-gradient(circle at 88% 8%,rgba(94,215,255,.12),transparent 25%),
+ linear-gradient(135deg,#05171b,#08252a 55%,#071c21)}
+button,.tap{font:inherit;-webkit-tap-highlight-color:transparent}
+button{color:inherit}
+#app{width:100%;height:100%;display:grid;grid-template-rows:86px 1fr 84px;position:relative}
+.topbar{display:grid;grid-template-columns:minmax(280px,1fr) auto auto;align-items:center;gap:16px;padding:12px 22px;border-bottom:1px solid var(--line);background:rgba(5,24,29,.88);backdrop-filter:blur(16px);z-index:30}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.logo{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(145deg,var(--mint),var(--cyan));color:#062026;font-weight:1000;font-size:27px;box-shadow:0 10px 25px rgba(94,215,255,.18)}
+.brand h1{font-size:clamp(18px,2vw,28px);line-height:1;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand small{display:block;color:var(--muted);margin-top:7px;font-size:12px;letter-spacing:.06em}
+.progressBox{min-width:230px}
+.progressLine{height:10px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
+#progressBar{height:100%;width:0;background:linear-gradient(90deg,var(--mint),var(--gold));transition:.35s}
+.scoreRow{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:7px}
+.top-actions{display:flex;gap:10px}
+.iconBtn,.btn{border:1px solid var(--line);background:rgba(255,255,255,.07);border-radius:18px;min-height:58px;padding:0 18px;font-weight:800;cursor:pointer;transition:.18s;box-shadow:none}
+.iconBtn{min-width:58px;padding:0;display:grid;place-items:center;font-size:22px}
+.iconBtn:hover,.btn:hover{transform:translateY(-2px);border-color:rgba(102,227,196,.55)}
+.btn.primary{background:linear-gradient(135deg,#16a085,#25bda5);border-color:transparent;color:#041c1a;box-shadow:0 12px 26px rgba(37,189,165,.24)}
+.btn.gold{background:linear-gradient(135deg,#f2b441,#ffd86a);color:#352300;border:0}
+.btn.danger{background:rgba(255,94,103,.12);border-color:rgba(255,94,103,.35)}
+.btn:disabled{opacity:.4;filter:grayscale(.5);cursor:not-allowed;transform:none}
+main{position:relative;min-height:0}
+.scene{position:absolute;inset:0;padding:22px 26px;opacity:0;pointer-events:none;transform:translateX(24px) scale(.985);transition:.32s ease;overflow:hidden}
+.scene.active{opacity:1;pointer-events:auto;transform:none}
+.sceneHeader{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:16px}
+.sceneHeader h2{font-size:clamp(25px,3vw,43px);line-height:1.05;margin:0}
+.sceneHeader p{margin:8px 0 0;color:var(--muted);font-size:clamp(13px,1.25vw,18px)}
+.kicker{font-size:12px;letter-spacing:.13em;color:var(--mint);font-weight:900;text-transform:uppercase;margin-bottom:8px}
+.card{background:linear-gradient(150deg,rgba(18,52,59,.92),rgba(8,34,39,.92));border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow)}
+.glass{background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:22px}
+.hint{border-left:4px solid var(--gold);background:rgba(255,213,106,.08);padding:12px 16px;border-radius:0 16px 16px 0;color:#ffe9ac;font-weight:700}
+.bottomNav{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:10px 22px;border-top:1px solid var(--line);background:rgba(5,24,29,.9);z-index:30}
+.steps{display:flex;justify-content:center;gap:9px;min-width:0}
+.step{height:52px;min-width:52px;border-radius:17px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);font-weight:900;cursor:pointer;padding:0 14px}
+.step.active{background:rgba(102,227,196,.16);border-color:rgba(102,227,196,.5);color:#dffff7}
+.step span{display:none}
+@media(min-width:1200px){.step span{display:inline;margin-left:8px}}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+.hero{height:100%;display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:stretch}
+.heroCopy{padding:34px 38px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.heroCopy:after{content:"";position:absolute;width:430px;height:430px;border-radius:50%;right:-190px;bottom:-220px;background:radial-gradient(circle,var(--mint),transparent 65%);opacity:.1}
+.heroTitle{font-size:clamp(44px,6.1vw,88px);line-height:.91;margin:10px 0 18px;letter-spacing:-.045em}
+.heroTitle b{color:var(--gold)}
+.heroText{font-size:clamp(16px,1.5vw,22px);line-height:1.5;color:#cce3df;max-width:850px;margin:0 0 22px}
+.heroButtons{display:flex;gap:12px;flex-wrap:wrap}
+.heroButtons .btn{min-height:72px;font-size:18px;padding:0 25px}
+.mysteryPanel{padding:24px;display:grid;grid-template-rows:auto 1fr auto;gap:14px;overflow:hidden}
+.vialRow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-content:center}
+.vial{min-height:118px;border:1px solid rgba(255,255,255,.13);background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.035));border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;font-weight:1000;font-size:30px;box-shadow:inset 0 -25px 40px rgba(94,215,255,.09)}
+.vial:before{content:"";width:46%;height:55%;position:absolute;bottom:-8px;border-radius:45% 45% 20% 20%;background:linear-gradient(rgba(94,215,255,.14),rgba(102,227,196,.35));filter:blur(.2px)}
+.vial>span{z-index:1;text-shadow:0 2px 10px #03191e}
+.mysteryFooter{font-weight:800;color:var(--muted);text-align:center}
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            overflow: hidden;
-            background: #040408;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            cursor: crosshair;
-        }
-        canvas {
-            display: block;
-        }
+.observeGrid{height:calc(100% - 96px);display:grid;grid-template-columns:1.22fr .78fr;gap:18px;min-height:0}
+.flowerCompare{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0}
+.flowerPane{display:grid;grid-template-rows:auto 1fr;min-height:0;text-align:center}
+.paneTitle{font-weight:900;color:var(--muted);padding:8px}
+.flowerStage{min-height:0;display:grid;place-items:center;border-radius:22px;background:radial-gradient(circle at 50% 65%,rgba(102,227,196,.10),transparent 46%),rgba(255,255,255,.025);overflow:hidden}
+.flowerStage svg{width:min(90%,420px);height:min(90%,430px);filter:drop-shadow(0 18px 24px rgba(0,0,0,.24))}
+.effectPanel{padding:18px;display:grid;grid-template-rows:auto 1fr auto;gap:12px;min-height:0}
+.effectCards{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start;overflow:auto}
+.effect-card{min-height:92px;border:1px solid var(--line);background:rgba(255,255,255,.05);border-radius:20px;color:var(--ink);text-align:left;padding:13px 15px;cursor:pointer;display:flex;gap:12px;align-items:center;transition:.18s}
+.effect-card:hover,.effect-card.active{background:rgba(102,227,196,.13);border-color:rgba(102,227,196,.5);transform:translateY(-2px)}
+.effectIcon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:rgba(255,255,255,.08);font-size:25px;flex:0 0 auto}
+.effect-card b{display:block;font-size:14px}.effect-card small{color:var(--muted);font-size:11px}
 
-        /* ---- Cyber HUD Overlay ---- */
-        #hud {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            pointer-events: none;
-            z-index: 20;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            padding: 0 20px;
-            width: 100%;
-            justify-content: center;
-        }
-        .hud-item {
-            background: rgba(6, 6, 14, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 240, 255, 0.15);
-            border-radius: 16px;
-            padding: 12px 24px;
-            font-size: 12px;
-            letter-spacing: 1px;
-            color: rgba(255, 255, 255, 0.8);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.1), inset 0 0 10px rgba(0, 240, 255, 0.05);
-        }
-        .hud-item .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse-dot 1.5s ease-in-out infinite;
-        }
-        .hud-item .dot.cyan { background: #00f0ff; box-shadow: 0 0 15px #00f0ff; }
-        .hud-item .dot.magenta { background: #ff0077; box-shadow: 0 0 15px #ff0077; }
-        .hud-item .dot.green { background: #39ff14; box-shadow: 0 0 15px #39ff14; }
-        
-        .hud-item .label {
-            opacity: 0.5;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 10px;
-        }
-        .hud-item .value {
-            font-weight: 700;
-            color: #fff;
-            font-family: monospace;
-            font-size: 15px;
-            text-shadow: 0 0 5px rgba(255,255,255,0.5);
-        }
+.expLayout{height:calc(100% - 96px);display:grid;grid-template-columns:320px 1fr 340px;gap:16px;min-height:0}
+.expList{padding:14px;display:grid;gap:11px;align-content:start}
+.experiment-card{border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.045);padding:15px;cursor:pointer;transition:.18s;min-height:104px}
+.experiment-card.active{border-color:var(--cyan);background:rgba(94,215,255,.10);transform:translateX(5px)}
+.mixCode{display:flex;gap:7px;margin-top:10px}
+.miniVial{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(180deg,rgba(255,255,255,.17),rgba(94,215,255,.12));border:1px solid var(--line);font-weight:1000}
+.expCenter{padding:16px;display:grid;grid-template-rows:auto 1fr;min-height:0}
+.expCenterHead{display:flex;justify-content:space-between;align-items:center}
+.expResult{min-height:0;display:grid;grid-template-columns:.9fr 1.1fr;gap:12px;align-items:stretch}
+.expFlower{display:grid;place-items:center;min-height:0}
+.expFlower svg{width:min(90%,430px);height:min(92%,440px)}
+.labAnim{display:flex;flex-direction:column;justify-content:center;gap:12px;padding:12px}
+.pourVials{display:flex;justify-content:center;gap:12px}
+.bigVial{width:82px;height:116px;border:2px solid rgba(255,255,255,.18);border-radius:18px 18px 28px 28px;display:grid;place-items:center;font-size:26px;font-weight:1000;background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(94,215,255,.14))}
+.expObs{padding:15px;display:grid;grid-template-rows:auto 1fr auto;gap:12px;min-height:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-content:start;overflow:auto}
+.chip{border:1px solid var(--line);background:rgba(255,255,255,.045);color:var(--ink);padding:11px 12px;border-radius:16px;min-height:52px;font-weight:800;cursor:pointer;flex:1 1 140px}
+.chip.on{border-color:var(--gold);background:rgba(255,213,106,.12);color:#fff0bb}
+.chip.correct{border-color:var(--ok);background:rgba(74,222,128,.12)}
+.chip.wrong{border-color:var(--red);background:rgba(255,94,103,.10)}
+.feedback{min-height:48px;color:var(--muted);font-weight:800}
 
-        #status {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 20;
-            background: rgba(6, 6, 14, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            padding: 10px 30px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 11px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: 600;
-            pointer-events: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        #status .highlight {
-            color: #00f0ff;
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
-        }
+.boardLayout{height:calc(100% - 96px);display:grid;grid-template-columns:290px 1fr;gap:18px;min-height:0}
+.tokenBank{padding:16px;display:flex;flex-direction:column;gap:10px;overflow:auto}
+.tokenBank h3,.mapBoard h3{margin:0 0 4px}
+.evidence-token,.glass-token{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.075);min-height:64px;padding:10px 13px;font-weight:900;display:flex;align-items:center;gap:10px;cursor:grab;user-select:none;touch-action:none}
+.evidence-token:active,.glass-token:active{cursor:grabbing}
+.tokenDot{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(102,227,196,.15);flex:0 0 auto}
+.mapBoard{padding:16px;display:grid;grid-template-rows:auto 1fr auto;min-height:0}
+.slotGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;min-height:0}
+.glass-slot{min-height:145px;border:2px dashed rgba(255,255,255,.15);border-radius:24px;background:rgba(255,255,255,.025);padding:12px;display:flex;flex-direction:column;gap:8px;transition:.18s}
+.glass-slot.over{border-color:var(--cyan);background:rgba(94,215,255,.08)}
+.slotLabel{font-size:26px;font-weight:1000;line-height:1}
+.slotSub{color:var(--muted);font-size:11px}
+.glass-slot .evidence-token{margin-top:auto;background:rgba(102,227,196,.11)}
+.glass-slot.good{border-color:rgba(74,222,128,.55);background:rgba(74,222,128,.06)}
+.glass-slot.bad{border-color:rgba(255,94,103,.48)}
+.boardFooter{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px}
 
-        @keyframes pulse-dot {
-            0%, 100% { transform: scale(0.8); opacity: 0.5; }
-            50% { transform: scale(1.3); opacity: 1; }
-        }
+.sandboxLayout{height:calc(100% - 96px);display:grid;grid-template-rows:auto 1fr;gap:12px;min-height:0}
+.tabs{display:flex;gap:8px}
+.tab{min-height:50px;border:1px solid var(--line);background:rgba(255,255,255,.05);border-radius:16px;padding:0 18px;color:var(--muted);font-weight:900;cursor:pointer}
+.tab.active{color:#061b1f;background:var(--mint);border-color:transparent}
+.tabPane{display:none;min-height:0}.tabPane.active{display:block;height:100%}
+.sandboxGrid{height:100%;display:grid;grid-template-columns:260px 1fr 330px;gap:15px;min-height:0}
+.rack{padding:13px;display:flex;flex-direction:column;gap:8px;overflow:auto}
+.rack .glass-token{font-size:18px}
+.mixLab{padding:16px;display:grid;grid-template-rows:auto 112px 1fr auto;gap:10px;min-height:0}
+.mixSlots{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mix-slot{border:2px dashed rgba(255,255,255,.15);border-radius:20px;display:grid;place-items:center;min-width:0;color:var(--muted);padding:8px}
+.mix-slot.over{border-color:var(--gold);background:rgba(255,213,106,.07)}
+.mix-slot .glass-token{width:100%;min-height:74px;justify-content:center}.mix-slot:has(.glass-token)>span{display:none}
+.sandboxFlower{display:grid;place-items:center;min-height:0;background:radial-gradient(circle,rgba(102,227,196,.08),transparent 55%);border-radius:20px}
+.sandboxFlower svg{width:min(75%,370px);height:min(95%,390px)}
+.predictPanel{padding:14px;display:grid;grid-template-rows:auto 1fr auto;gap:9px;min-height:0}
+.predictPanel .chips{display:grid;grid-template-columns:1fr;overflow:auto}
+.bossGrid{height:100%;display:grid;grid-template-columns:1fr 410px;gap:15px;min-height:0}
+.bossData{padding:14px;display:grid;grid-template-rows:auto 1fr auto;gap:10px;min-height:0}
+.bossExpRow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;min-height:0}
+.bossExp{border:1px solid var(--line);border-radius:20px;padding:10px;display:grid;grid-template-rows:auto 1fr;min-height:0;text-align:center}
+.bossExp svg{width:100%;height:100%;min-height:180px}
+.bossMap{padding:13px;display:grid;grid-template-rows:auto auto 1fr auto;gap:8px;min-height:0}
+.bossTokens{display:flex;flex-wrap:wrap;gap:6px;max-height:150px;overflow:auto}
+.bossTokens .evidence-token{min-height:52px;padding:7px 9px;font-size:12px;flex:1 1 145px}
+.bossSlots{display:grid;grid-template-columns:1fr 1fr;gap:7px;min-height:0;overflow:auto}
+.bossSlots .glass-slot{min-height:88px;border-radius:18px;padding:8px}.bossSlots .slotLabel{font-size:20px}.bossSlots .slotSub{display:none}.bossSlots .evidence-token{min-height:46px;font-size:11px;padding:5px}
 
-        #loading {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: #05050a; z-index: 100; transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        #loading.hidden { opacity: 0; pointer-events: none; }
-        
-        .spinner {
-            width: 64px; height: 64px;
-            border: 3px solid rgba(0, 240, 255, 0.05);
-            border-top-color: #00f0ff; border-bottom-color: #ff0077;
-            border-radius: 50%; animation: spin 1s cubic-bezier(0.6, 0.2, 0.2, 0.8) infinite;
-            margin-bottom: 24px; filter: drop-shadow(0 0 15px rgba(0,240,255,0.4));
-        }
-        #loading p {
-            color: rgba(255, 255, 255, 0.6); font-size: 11px; letter-spacing: 5px; text-transform: uppercase;
-        }
-        #loading p span { color: #00f0ff; font-weight: bold; }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+#visionPanel{position:fixed;right:18px;top:100px;width:min(360px,31vw);aspect-ratio:4/3;border-radius:24px;overflow:hidden;border:1px solid rgba(94,215,255,.35);background:#020d10;box-shadow:0 22px 70px rgba(0,0,0,.45);z-index:60;display:none}
+#visionPanel.open{display:block}
+#visionVideo,#visionCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#visionCanvas{pointer-events:none}
+.visionHud{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:10px}
+.visionTop,.visionBottom{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.pill{background:rgba(1,15,18,.72);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(8px);border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900}
+.expression{font-size:20px}
+.visionControls{position:absolute;right:8px;top:48px;display:flex;flex-direction:column;gap:6px;pointer-events:auto}
+.visionControls button{width:42px;height:42px;border-radius:13px;border:1px solid rgba(255,255,255,.16);background:rgba(1,15,18,.76);color:#fff;font-size:18px;cursor:pointer}
+#handCursorLayer{position:fixed;inset:0;z-index:80;pointer-events:none}
+.handCursor{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border:3px solid var(--cyan);border-radius:50%;box-shadow:0 0 0 8px rgba(94,215,255,.12),0 0 25px rgba(94,215,255,.5);transition:width .08s,height .08s}
+.handCursor.pinching{width:24px;height:24px;margin:-12px 0 0 -12px;border-color:var(--gold);box-shadow:0 0 0 10px rgba(255,213,106,.14),0 0 28px rgba(255,213,106,.55)}
+.dragGhost{position:fixed;z-index:100;pointer-events:none;opacity:.9;transform:translate(-50%,-50%) scale(1.05);box-shadow:0 22px 48px rgba(0,0,0,.42);max-width:280px}
+.toast{position:fixed;left:50%;bottom:102px;transform:translate(-50%,30px);opacity:0;z-index:120;background:#09252b;border:1px solid var(--line);border-radius:18px;padding:14px 20px;box-shadow:var(--shadow);font-weight:900;transition:.22s;max-width:min(680px,90vw);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.confetti{position:fixed;width:10px;height:18px;border-radius:4px;z-index:130;pointer-events:none;animation:fall 1.3s ease-out forwards}
+@keyframes fall{to{transform:translate(var(--dx),85vh) rotate(760deg);opacity:0}}
+.pulse{animation:pulse .5s ease}@keyframes pulse{50%{transform:scale(1.03)}}
+.shake{animation:shake .35s}@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}}
+.softNote{font-size:11px;color:var(--muted);line-height:1.4}
+kbd{padding:2px 7px;border:1px solid var(--line);border-bottom-width:2px;border-radius:7px;background:rgba(255,255,255,.06)}
+
+@media(max-width:1050px){
+  #app{grid-template-rows:76px 1fr 74px}.topbar{padding:8px 12px;grid-template-columns:1fr auto}.progressBox{display:none}.brand small{display:none}
+  .scene{padding:14px}.hero{grid-template-columns:1fr}.mysteryPanel{display:none}
+  .observeGrid{grid-template-columns:1fr}.effectPanel{position:absolute;right:14px;bottom:14px;width:42%;height:58%}
+  .expLayout{grid-template-columns:220px 1fr}.expObs{position:absolute;right:14px;bottom:14px;width:320px;height:52%}
+  .boardLayout{grid-template-columns:240px 1fr}.sandboxGrid{grid-template-columns:210px 1fr}.predictPanel{position:absolute;right:14px;bottom:14px;width:300px;height:56%}
+  .bossGrid{grid-template-columns:1fr 340px} #visionPanel{width:320px}
+}
+@media(max-height:720px){
+  .scene{padding-top:12px;padding-bottom:10px}.sceneHeader{margin-bottom:8px}.sceneHeader h2{font-size:28px}.sceneHeader p{font-size:12px}
+  .vial{min-height:90px}.effect-card{min-height:72px}.expLayout,.boardLayout,.sandboxLayout{height:calc(100% - 70px)}
+}
+</style>
 </head>
 <body>
-
-    <div id="loading">
-        <div class="spinner"></div>
-        <p>Menghubungkan <span>Neon Plasma Matrix</span></p>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">PT</div>
+      <div><h1>Lab Misteri Pak Taro</h1><small>IFP MULTITOUCH • BERPIKIR KOMPUTASIONAL • VISION AI</small></div>
     </div>
-
-    <div id="status">⚡ <span class="highlight">Menginisialisasi Kamera</span></div>
-
-    <div id="hud">
-        <div class="hud-item">
-            <span class="dot cyan"></span>
-            <span class="label">Tangan L</span>
-            <span class="value" id="hud-hand1">—</span>
-        </div>
-        <div class="hud-item">
-            <span class="dot magenta"></span>
-            <span class="label">Tangan R</span>
-            <span class="value" id="hud-hand2">—</span>
-        </div>
-        <div class="hud-item">
-            <span class="dot green"></span>
-            <span class="label">Energi Plasma</span>
-            <span class="value" id="hud-strings">0</span>
-        </div>
+    <div class="progressBox">
+      <div class="scoreRow"><span id="sceneName">Intro</span><span id="evidenceScore">Bukti 0</span></div>
+      <div class="progressLine"><div id="progressBar"></div></div>
     </div>
+    <div class="top-actions">
+      <button class="iconBtn ai-clickable" id="visionBtn" title="Vision AI">◉</button>
+      <button class="iconBtn ai-clickable" id="soundBtn" title="Suara">♪</button>
+      <button class="iconBtn ai-clickable" id="fullscreenBtn" title="Fullscreen">⛶</button>
+    </div>
+  </header>
 
-    <script>
-        const CONFIG = {
-            maxParticles: 300,
-            particleLife: 70,
-            glowIntensity: 1.5,
-            colorSpeed: 0.02,
-            stringSmooth: 0.25, 
-        };
+  <main>
+    <section class="scene active" data-scene="0" id="introScene">
+      <div class="hero">
+        <div class="heroCopy card">
+          <div class="kicker">Misi Investigasi</div>
+          <div class="heroTitle">6 gelas.<br>5 pupuk.<br><b>1 penipu.</b></div>
+          <p class="heroText">Pak Taro lupa mencatat isi setiap gelas. Temukan gelas yang hanya berisi air dengan mengamati perubahan bunga, mencari pola, lalu menguji bukti.</p>
+          <div class="heroButtons">
+            <button class="btn primary ai-clickable" id="startMission">Mulai Misi →</button>
+            <button class="btn ai-clickable" id="introVision">Aktifkan Vision AI</button>
+          </div>
+          <p class="softNote">Mode sentuh selalu aktif. Vision AI opsional: gerakkan telunjuk sebagai kursor, lalu <b>jepit ibu jari + telunjuk</b> untuk memilih / menyeret.</p>
+        </div>
+        <div class="mysteryPanel card">
+          <div>
+            <div class="kicker">Rak Misteri</div>
+            <h2 style="margin:0">A sampai F</h2>
+          </div>
+          <div class="vialRow">
+            <div class="vial"><span>A</span></div><div class="vial"><span>B</span></div><div class="vial"><span>C</span></div>
+            <div class="vial"><span>D</span></div><div class="vial"><span>E</span></div><div class="vial"><span>F</span></div>
+          </div>
+          <div class="mysteryFooter">Jangan tebak. Cari bukti.</div>
+        </div>
+      </div>
+    </section>
 
-        let capture;
-        let hands;
-        let handLandmarks = [];
-        let isLoaded = false;
-        let isProcessing = false; // Kunci Pengaman Thread Async
-        let frameCounter = 0;
+    <section class="scene" data-scene="1" id="observeScene">
+      <div class="sceneHeader">
+        <div><div class="kicker">Scene 2 • Observasi</div><h2>Kenali perubahan bunga</h2><p>Sentuh satu kartu. Lihat bagian bunga yang berubah.</p></div>
+        <div class="hint">Lihat → bandingkan → sebutkan apa yang berubah.</div>
+      </div>
+      <div class="observeGrid">
+        <div class="flowerCompare card">
+          <div class="flowerPane"><div class="paneTitle">Bunga awal</div><div class="flowerStage" id="baseFlower"></div></div>
+          <div class="flowerPane"><div class="paneTitle">Setelah satu efek</div><div class="flowerStage" id="demoFlower"></div></div>
+        </div>
+        <div class="effectPanel card">
+          <div><b>5 kemungkinan khasiat</b><div class="softNote">Air tidak mengubah bunga.</div></div>
+          <div class="effectCards" id="effectCards"></div>
+          <div id="effectExplain" class="feedback">Pilih kartu untuk memulai.</div>
+        </div>
+      </div>
+    </section>
 
-        let particles = [];
-        const TIP_INDICES = [4, 8, 12, 16, 20];
-        let smoothPoints = [[], []];
-        let prevPoints = [[], []];
+    <section class="scene" data-scene="2" id="experimentScene">
+      <div class="sceneHeader">
+        <div><div class="kicker">Scene 3 • Eksperimen</div><h2>Amati tiga ramuan</h2><p>Pilih percobaan, tandai perubahan yang terlihat, lalu cek pengamatan.</p></div>
+        <div class="hint">Fokus pada hasil, bukan pada tebakan isi gelas.</div>
+      </div>
+      <div class="expLayout">
+        <div class="expList card" id="expList"></div>
+        <div class="expCenter card">
+          <div class="expCenterHead"><div><b id="expTitle">Percobaan 1</b><div class="softNote" id="expMixLabel"></div></div><button class="btn ai-clickable" id="replayExp">↻ Ulang Animasi</button></div>
+          <div class="expResult">
+            <div class="labAnim"><div class="pourVials" id="pourVials"></div><div class="softNote" style="text-align:center">Ramuan dicampurkan ke tanaman…</div></div>
+            <div class="expFlower" id="expFlower"></div>
+          </div>
+        </div>
+        <div class="expObs card">
+          <div><b>Apa yang berubah?</b><div class="softNote">Pilih semua yang terlihat pada bunga hasil.</div></div>
+          <div class="chips" id="obsChips"></div>
+          <div><div id="obsFeedback" class="feedback">Belum dicek.</div><button class="btn gold ai-clickable" id="checkObs" style="width:100%">Cek Pengamatan</button></div>
+        </div>
+      </div>
+    </section>
 
-        const hudHand1 = document.getElementById('hud-hand1');
-        const hudHand2 = document.getElementById('hud-hand2');
-        const hudStrings = document.getElementById('hud-strings');
-        const statusEl = document.getElementById('status');
+    <section class="scene" data-scene="3" id="evidenceScene">
+      <div class="sceneHeader">
+        <div><div class="kicker">Scene 4 • Papan Bukti</div><h2>Pasangkan gelas dengan khasiat</h2><p>Seret setiap kartu khasiat ke gelas yang paling masuk akal. Satu kartu adalah AIR.</p></div>
+        <div class="hint">Yang muncul bersama di dua percobaan → cari perubahan yang sama.</div>
+      </div>
+      <div class="boardLayout">
+        <div class="tokenBank card drop-bank" id="evidenceBank">
+          <h3>Kartu Khasiat</h3><div class="softNote">Sentuh-seret atau gunakan pinch Vision AI.</div>
+        </div>
+        <div class="mapBoard card">
+          <div><h3>Peta Misteri A–F</h3><div class="softNote">Kamu boleh memindah jawaban kapan saja sebelum mengecek.</div></div>
+          <div class="slotGrid" id="evidenceSlots"></div>
+          <div class="boardFooter"><div id="boardFeedback" class="feedback">Susun semua kartu terlebih dahulu.</div><button class="btn primary ai-clickable" id="checkBoard">Periksa Bukti</button></div>
+        </div>
+      </div>
+    </section>
 
-        function setup() {
-            createCanvas(windowWidth, windowHeight);
-            colorMode(HSB, 360, 100, 100, 1);
-            
-            // Inisialisasi Posisi Awal Smoothing
-            for (let h = 0; h < 2; h++) {
-                smoothPoints[h] = [];
-                prevPoints[h] = [];
-                for (let f = 0; f < TIP_INDICES.length; f++) {
-                    smoothPoints[h][f] = { x: width / 2, y: height / 2 };
-                    prevPoints[h][f] = { x: width / 2, y: height / 2 };
-                }
-            }
+    <section class="scene" data-scene="4" id="sandboxScene">
+      <div class="sceneHeader">
+        <div><div class="kicker">Scene 5 • Sandbox / Boss</div><h2>Prediksi. Uji. Buktikan.</h2><p>Campur bebas atau pecahkan kasus baru dengan isi gelas yang diacak.</p></div>
+        <div class="tabs"><button class="tab active ai-clickable" data-tab="sandbox">Sandbox</button><button class="tab ai-clickable" data-tab="boss">Boss Challenge</button></div>
+      </div>
+      <div class="sandboxLayout">
+        <div class="tabPane active" id="sandboxPane">
+          <div class="sandboxGrid">
+            <div class="rack card drop-bank" id="glassRack"><b>Rak Gelas</b><div class="softNote">Seret maksimal 3 gelas.</div></div>
+            <div class="mixLab card">
+              <div style="display:flex;justify-content:space-between;align-items:center"><b>Meja Campur</b><button class="btn ai-clickable" id="resetMix">Reset</button></div>
+              <div class="mixSlots" id="mixSlots"></div>
+              <div class="sandboxFlower" id="sandboxFlower"></div>
+              <div id="sandboxFeedback" class="feedback">Susun campuran, buat prediksi, lalu uji.</div>
+            </div>
+            <div class="predictPanel card">
+              <div><b>Prediksimu</b><div class="softNote">Apa yang akan berubah?</div></div>
+              <div class="chips" id="predictChips"></div>
+              <button class="btn gold ai-clickable" id="testMix">UJI RAMUAN!</button>
+            </div>
+          </div>
+        </div>
 
-            // 1. Inisialisasi Kamera murni lewat p5.js
-            capture = createCapture(VIDEO);
-            capture.size(640, 480);
-            capture.hide();
+        <div class="tabPane" id="bossPane">
+          <div class="bossGrid">
+            <div class="bossData card">
+              <div style="display:flex;justify-content:space-between;align-items:center"><div><b id="bossTitle">Kasus Acak #1</b><div class="softNote">Khasiat tiap gelas sudah diacak.</div></div><button class="btn ai-clickable" id="newBoss">Kasus Baru</button></div>
+              <div class="bossExpRow" id="bossExperiments"></div>
+              <div class="hint">Temukan isi A–F hanya dari tiga hasil percobaan.</div>
+            </div>
+            <div class="bossMap card">
+              <div><b>Papan Jawaban Boss</b><div class="softNote">Seret keenam kartu hingga semua slot terisi.</div></div>
+              <div class="bossTokens drop-bank" id="bossBank"></div>
+              <div class="bossSlots" id="bossSlots"></div>
+              <button class="btn primary ai-clickable" id="checkBoss">Kunci Jawaban</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-            // 2. Inisialisasi MediaPipe Hands Core CDN Resmi
-            hands = new Hands({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-            });
+  <nav class="bottomNav">
+    <button class="btn ai-clickable" id="prevBtn">← Kembali</button>
+    <div class="steps" id="steps">
+      <button class="step active ai-clickable" data-go="0">1 <span>Intro</span></button>
+      <button class="step ai-clickable" data-go="1">2 <span>Observasi</span></button>
+      <button class="step ai-clickable" data-go="2">3 <span>Eksperimen</span></button>
+      <button class="step ai-clickable" data-go="3">4 <span>Bukti</span></button>
+      <button class="step ai-clickable" data-go="4">5 <span>Sandbox</span></button>
+    </div>
+    <button class="btn primary ai-clickable" id="nextBtn">Lanjut →</button>
+  </nav>
+</div>
 
-            hands.setOptions({
-                maxNumHands: 2,
-                modelComplexity: 1,
-                minDetectionConfidence: 0.6,
-                minTrackingConfidence: 0.6
-            });
+<div id="visionPanel">
+  <video id="visionVideo" autoplay playsinline muted></video>
+  <canvas id="visionCanvas"></canvas>
+  <div class="visionHud">
+    <div class="visionTop"><span class="pill" id="visionStatus">Vision AI: belum aktif</span><span class="pill expression" id="expressionPill">🙂</span></div>
+    <div class="visionBottom"><span class="pill" id="handHint">☝️ telunjuk • 🤏 pinch</span><span class="pill" id="fpsPill">-- fps</span></div>
+  </div>
+  <div class="visionControls">
+    <button id="toggleMesh" title="Mesh wajah">◎</button>
+    <button id="toggleHand" title="Kontrol tangan">✋</button>
+    <button id="closeVision" title="Tutup">×</button>
+  </div>
+</div>
+<div id="handCursorLayer"></div>
+<div class="toast" id="toast"></div>
 
-            hands.onResults(onResults);
-        }
+<script>
+(() => {
+"use strict";
+const effects = [
+  {id:"double", icon:"✿", name:"Kelopak berlapis", hint:"Ada lapisan kelopak tambahan."},
+  {id:"leaf", icon:"❧", name:"Tumbuh daun", hint:"Daun muncul pada tangkai."},
+  {id:"wavy", icon:"〰", name:"Tangkai bergelombang", hint:"Tangkai tidak lagi lurus."},
+  {id:"white", icon:"◌", name:"Kelopak menjadi putih", hint:"Warna kelopak berubah putih."},
+  {id:"black", icon:"●", name:"Tengah menjadi hitam", hint:"Bagian tengah bunga menghitam."}
+];
+const allTokens = [...effects, {id:"water", icon:"💧", name:"AIR", hint:"Tidak memberi perubahan."}];
+const fixedMap = {A:"double",B:"leaf",C:"white",D:"water",E:"black",F:"wavy"};
+const experiments = [
+  {id:1,mix:["A","B","C"]},{id:2,mix:["A","D","E"]},{id:3,mix:["C","D","F"]}
+];
+const state = {
+  scene:0, evidence:0, sound:true, activeEffect:"double", activeExperiment:0,
+  userObs:[new Set(),new Set(),new Set()], obsSolved:new Set(), boardSolved:false,
+  sandboxPred:new Set(), bossMap:null,bossNo:1
+};
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const nameById = id => allTokens.find(e=>e.id===id)?.name || id;
+const iconById = id => allTokens.find(e=>e.id===id)?.icon || "?";
+const effectIdsForMix = (mix,map=fixedMap) => mix.map(g=>map[g]).filter(x=>x && x!=="water");
+const escapeHtml = s => String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
 
-        function onResults(results) {
-            if (!isLoaded) {
-                isLoaded = true;
-                document.getElementById('loading').classList.add('hidden');
-            }
-            handLandmarks = results.multiHandLandmarks || [];
-            isProcessing = false; // Buka kembali kunci prapemrosesan frame
-        }
+let audioCtx=null;
+function tone(freq=520,dur=.08,type="sine",gain=.045){
+  if(!state.sound) return;
+  try{
+    audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type=type;o.frequency.value=freq;g.gain.value=gain;o.connect(g);g.connect(audioCtx.destination);
+    o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+function successSound(){tone(520,.08);setTimeout(()=>tone(660,.09),80);setTimeout(()=>tone(820,.12),165)}
+function badSound(){tone(190,.12,"triangle",.035)}
+function toast(msg,ms=1900){
+  const el=$("#toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(toast.t);
+  toast.t=setTimeout(()=>el.classList.remove("show"),ms);
+}
+function confetti(n=34){
+  const colors=["#66e3c4","#5ed7ff","#ffd56a","#ff6f91","#fff"];
+  for(let i=0;i<n;i++){
+    const p=document.createElement("div");p.className="confetti";
+    p.style.left=(25+Math.random()*50)+"vw";p.style.top=(10+Math.random()*15)+"vh";
+    p.style.background=colors[i%colors.length];p.style.setProperty("--dx",(-250+Math.random()*500)+"px");
+    p.style.animationDelay=(Math.random()*.2)+"s";document.body.appendChild(p);setTimeout(()=>p.remove(),1600);
+  }
+}
+function addEvidence(n=1){
+  state.evidence+=n; $("#evidenceScore").textContent=`Bukti ${state.evidence}`;
+}
 
-        // ---- Particle Engine Super Glow ----
-        function emitParticles(x, y, colorHue, speedMultiplier = 1, count = 2) {
-            for (let i = 0; i < count; i++) {
-                if (particles.length >= CONFIG.maxParticles) {
-                    particles.shift();
-                }
-                const angle = random(TWO_PI);
-                const speed = random(1.5, 4.5) * speedMultiplier;
-                particles.push({
-                    x, y,
-                    vx: cos(angle) * speed,
-                    vy: sin(angle) * speed,
-                    life: CONFIG.particleLife * random(0.6, 1.2),
-                    maxLife: CONFIG.particleLife,
-                    size: random(3, 7),
-                    hue: (colorHue + random(-15, 15)) % 360,
-                });
-            }
-        }
+function flowerSVG(active=[], extraClass=""){
+  const set=new Set(active);
+  const petal = set.has("white") ? "#f7fbfa" : "#847276";
+  const petalStroke = set.has("white") ? "#aabec1" : "#5b4a4e";
+  const center = set.has("black") ? "#171a1d" : "#f4e6c7";
+  const stemPath = set.has("wavy")
+    ? "M250 260 C210 305 292 338 242 380 C200 415 282 444 252 500"
+    : "M250 260 C250 340 248 420 252 500";
+  let petals="";
+  const ring=(r,scale=1,opacity=1)=>{
+    let s="";
+    for(let i=0;i<8;i++){
+      const a=i*45, rad=a*Math.PI/180, cx=250+Math.cos(rad)*r, cy=220+Math.sin(rad)*r;
+      s += `<ellipse cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="${36*scale}" ry="${69*scale}" fill="${petal}" fill-opacity="${opacity}" stroke="${petalStroke}" stroke-width="4" transform="rotate(${a+90} ${cx} ${cy})"/>`;
+    } return s;
+  };
+  petals += ring(76,1,1);
+  if(set.has("double")) petals += ring(48,.72,.98);
+  const leaves = set.has("leaf") ? `
+    <path d="M246 365 C190 320 151 344 171 385 C193 420 225 405 249 386" fill="#69c97a" stroke="#2c6a45" stroke-width="5"/>
+    <path d="M251 410 C305 365 346 390 326 429 C305 464 272 447 251 430" fill="#5fbd70" stroke="#2c6a45" stroke-width="5"/>` : "";
+  return `<svg class="${extraClass}" viewBox="0 0 500 560" role="img" aria-label="Ilustrasi bunga">
+    <defs><filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <path d="${stemPath}" fill="none" stroke="#5aa86a" stroke-width="13" stroke-linecap="round"/>
+    ${leaves}
+    <g>${petals}</g>
+    <circle cx="250" cy="220" r="42" fill="${center}" stroke="#5d5050" stroke-width="5"/>
+    <circle cx="237" cy="208" r="6" fill="rgba(255,255,255,.42)"/>
+  </svg>`;
+}
 
-        function updateParticles() {
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.vx *= 0.96; 
-                p.vy *= 0.96;
-                p.life -= 1;
-                if (p.life <= 0) {
-                    particles.splice(i, 1);
-                }
-            }
-        }
+function renderObserve(){
+  $("#baseFlower").innerHTML=flowerSVG([]);
+  $("#demoFlower").innerHTML=flowerSVG([state.activeEffect]);
+  $("#effectCards").innerHTML=effects.map(e=>`<button class="effect-card ai-clickable ${e.id===state.activeEffect?"active":""}" data-effect="${e.id}">
+    <span class="effectIcon">${e.icon}</span><span><b>${e.name}</b><small>${e.hint}</small></span></button>`).join("");
+  const e=effects.find(x=>x.id===state.activeEffect);
+  $("#effectExplain").textContent=`Perhatikan: ${e.hint}`;
+  $$("#effectCards .effect-card").forEach(btn=>btn.addEventListener("click",()=>{
+    state.activeEffect=btn.dataset.effect; tone(620,.05); renderObserve();
+  }));
+}
+function renderExpList(){
+  $("#expList").innerHTML=experiments.map((e,i)=>`<button class="experiment-card ai-clickable ${i===state.activeExperiment?"active":""}" data-i="${i}">
+    <b>Percobaan ${e.id}</b><div class="mixCode">${e.mix.map(g=>`<span class="miniVial">${g}</span>`).join("")}</div></button>`).join("");
+  $$("#expList .experiment-card").forEach(b=>b.addEventListener("click",()=>{state.activeExperiment=+b.dataset.i;tone(560,.05);renderExperiment()}));
+}
+function renderObsChips(){
+  const selected=state.userObs[state.activeExperiment];
+  $("#obsChips").innerHTML=effects.map(e=>`<button class="chip ai-clickable ${selected.has(e.id)?"on":""}" data-effect="${e.id}">${e.icon} ${e.name}</button>`).join("");
+  $$("#obsChips .chip").forEach(b=>b.addEventListener("click",()=>{
+    const s=state.userObs[state.activeExperiment]; s.has(b.dataset.effect)?s.delete(b.dataset.effect):s.add(b.dataset.effect);
+    tone(480,.035); renderObsChips();
+  }));
+}
+function renderExperiment(){
+  renderExpList(); renderObsChips();
+  const exp=experiments[state.activeExperiment], result=effectIdsForMix(exp.mix);
+  $("#expTitle").textContent=`Percobaan ${exp.id}`;
+  $("#expMixLabel").textContent=exp.mix.join(" + ");
+  $("#pourVials").innerHTML=exp.mix.map(g=>`<div class="bigVial">${g}</div>`).join("");
+  $("#expFlower").innerHTML=flowerSVG(result);
+  $("#obsFeedback").textContent="Belum dicek.";
+}
+function checkObservation(){
+  const exp=experiments[state.activeExperiment], truth=new Set(effectIdsForMix(exp.mix)), user=state.userObs[state.activeExperiment];
+  let ok=truth.size===user.size && [...truth].every(x=>user.has(x));
+  $$("#obsChips .chip").forEach(b=>{
+    b.classList.remove("correct","wrong");
+    if(user.has(b.dataset.effect)) b.classList.add(truth.has(b.dataset.effect)?"correct":"wrong");
+  });
+  if(ok){
+    $("#obsFeedback").textContent="Pas! Pengamatanmu cocok dengan gambar.";
+    if(!state.obsSolved.has(exp.id)){state.obsSolved.add(exp.id);addEvidence(1)}
+    successSound(); confetti(12);
+  }else{
+    const missing=[...truth].filter(x=>!user.has(x)).length, extra=[...user].filter(x=>!truth.has(x)).length;
+    $("#obsFeedback").textContent=`Belum pas: ${missing} perubahan belum ditandai, ${extra} pilihan perlu dicek lagi.`;
+    badSound();
+  }
+}
+function animateExperiment(){
+  const v=$$(".bigVial");v.forEach((el,i)=>{el.animate([{transform:"translateY(0) rotate(0)"},{transform:`translateY(35px) rotate(${i%2?12:-12}deg)`},{transform:"translateY(0)"}],{duration:650,delay:i*90,easing:"ease-out"})});
+  $("#expFlower").classList.add("pulse");setTimeout(()=>$("#expFlower").classList.remove("pulse"),600);tone(700,.08);
+}
 
-        function drawParticles() {
-            for (const p of particles) {
-                const progress = p.life / p.maxLife;
-                const alpha = map(progress, 0, 1, 0, 1);
-                const currentSize = p.size * progress;
+function tokenHTML(t,kind="effect"){ return `<div class="${kind==="glass"?"glass-token":"evidence-token"} draggable hand-draggable" data-kind="${kind}" data-value="${t.id||t}" tabindex="0">
+  <span class="tokenDot">${kind==="glass"?"🧪":t.icon}</span><span>${kind==="glass"?(t.id||t):t.name}</span></div>`; }
+function buildEvidenceBoard(){
+  const bank=$("#evidenceBank");
+  bank.querySelectorAll(".evidence-token").forEach(x=>x.remove());
+  allTokens.forEach(t=>bank.insertAdjacentHTML("beforeend",tokenHTML(t)));
+  $("#evidenceSlots").innerHTML="ABCDEF".split("").map(g=>`<div class="glass-slot dropzone" data-accept="effect" data-glass="${g}">
+    <div class="slotLabel">Gelas ${g}</div><div class="slotSub">Seret satu kartu ke sini</div></div>`).join("");
+  registerDraggables();
+}
+function checkBoard(){
+  const slots=$$("#evidenceSlots .glass-slot"); let filled=0, correct=0;
+  slots.forEach(s=>{
+    s.classList.remove("good","bad"); const t=s.querySelector(".evidence-token");
+    if(t){filled++; if(t.dataset.value===fixedMap[s.dataset.glass]){correct++;s.classList.add("good")}else s.classList.add("bad")}
+  });
+  if(filled<6){$("#boardFeedback").textContent=`Baru ${filled}/6 slot terisi.`;badSound();return}
+  if(correct===6){
+    $("#boardFeedback").textContent="Semua bukti konsisten. Gelas air berhasil ditemukan!";
+    if(!state.boardSolved){state.boardSolved=true;addEvidence(3)}
+    successSound();confetti(55);
+  }else{
+    $("#boardFeedback").textContent=`${correct}/6 pasangan sudah konsisten. Periksa lagi pola antarpencobaan.`;
+    badSound();
+  }
+}
 
-                drawingContext.shadowBlur = currentSize * 3 * CONFIG.glowIntensity;
-                drawingContext.shadowColor = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
-                
-                noStroke();
-                fill(p.hue, 95, 100, alpha);
-                circle(p.x, p.y, currentSize);
-            }
-            drawingContext.shadowBlur = 0; 
-        }
+function buildSandbox(){
+  const rack=$("#glassRack"); rack.querySelectorAll(".glass-token").forEach(x=>x.remove());
+  "ABCDEF".split("").forEach(g=>rack.insertAdjacentHTML("beforeend",tokenHTML({id:g},"glass")));
+  $("#mixSlots").innerHTML=[0,1,2].map(i=>`<div class="mix-slot dropzone" data-accept="glass"><span>Slot ${i+1}</span></div>`).join("");
+  $("#sandboxFlower").innerHTML=flowerSVG([]);
+  $("#predictChips").innerHTML=effects.map(e=>`<button class="chip ai-clickable" data-effect="${e.id}">${e.icon} ${e.name}</button>`).join("");
+  state.sandboxPred.clear();
+  $$("#predictChips .chip").forEach(b=>b.addEventListener("click",()=>{
+    const e=b.dataset.effect;state.sandboxPred.has(e)?state.sandboxPred.delete(e):state.sandboxPred.add(e);b.classList.toggle("on");tone(500,.035);
+  }));
+  registerDraggables();
+}
+function resetMix(){
+  const rack=$("#glassRack");
+  $$("#mixSlots .glass-token").forEach(t=>rack.appendChild(t));
+  $("#sandboxFlower").innerHTML=flowerSVG([]);state.sandboxPred.clear();$$("#predictChips .chip").forEach(b=>b.classList.remove("on","correct","wrong"));
+  $("#sandboxFeedback").textContent="Susun campuran, buat prediksi, lalu uji.";
+}
+function testMix(){
+  const mix=$$("#mixSlots .glass-token").map(t=>t.dataset.value);
+  if(!mix.length){toast("Masukkan minimal satu gelas dulu.");badSound();return}
+  const truth=new Set(effectIdsForMix(mix));
+  $("#sandboxFlower").innerHTML=flowerSVG([...truth]);
+  let ok=truth.size===state.sandboxPred.size && [...truth].every(x=>state.sandboxPred.has(x));
+  $$("#predictChips .chip").forEach(b=>{
+    b.classList.remove("correct","wrong");
+    if(state.sandboxPred.has(b.dataset.effect)) b.classList.add(truth.has(b.dataset.effect)?"correct":"wrong");
+  });
+  $("#sandboxFeedback").textContent=ok?`Prediksi tepat untuk ${mix.join(" + ")}!`:`Hasil ${mix.join(" + ")} sudah muncul. Bandingkan dengan prediksimu.`;
+  if(ok){successSound();confetti(18)}else tone(310,.06);
+}
 
-        // ---- Main Render Loop ----
-        function draw() {
-            frameCounter++;
-            background(240, 40, 4, 1);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function newBoss(){
+  state.bossNo++;
+  const vals=shuffle(allTokens.map(x=>x.id));
+  state.bossMap=Object.fromEntries("ABCDEF".split("").map((g,i)=>[g,vals[i]]));
+  $("#bossTitle").textContent=`Kasus Acak #${state.bossNo}`;
+  $("#bossExperiments").innerHTML=experiments.map(e=>`<div class="bossExp"><div><b>P${e.id}</b> • ${e.mix.join(" + ")}</div><div>${flowerSVG(effectIdsForMix(e.mix,state.bossMap))}</div></div>`).join("");
+  $("#bossBank").innerHTML=allTokens.map(t=>tokenHTML(t)).join("");
+  $("#bossSlots").innerHTML="ABCDEF".split("").map(g=>`<div class="glass-slot dropzone" data-accept="effect" data-glass="${g}"><div class="slotLabel">${g}</div><div class="slotSub">?</div></div>`).join("");
+  registerDraggables();
+}
+function checkBoss(){
+  const slots=$$("#bossSlots .glass-slot");let filled=0,correct=0;
+  slots.forEach(s=>{s.classList.remove("good","bad");const t=s.querySelector(".evidence-token");if(t){filled++;const good=t.dataset.value===state.bossMap[s.dataset.glass];correct+=good?1:0;s.classList.add(good?"good":"bad")}});
+  if(filled<6){toast(`Isi semua slot dulu (${filled}/6).`);badSound();return}
+  if(correct===6){toast("BOSS CLEAR! Polamu konsisten untuk kasus acak.");successSound();confetti(70)}
+  else{toast(`${correct}/6 cocok. Jangan hafal huruf — baca polanya.`);badSound()}
+}
 
-            // Validasi apakah metadata kamera p5.js sudah siap digunakan
-            if (capture && capture.elt && capture.elt.readyState === 4) {
-                
-                // PIPING: Kirim data frame video p5 ke MediaPipe secara aman tanpa tumpang tindih
-                if (!isProcessing) {
-                    isProcessing = true;
-                    hands.send({ image: capture.elt }).catch(() => { isProcessing = false; });
-                }
+function renderTop(){
+  const names=["Intro","Observasi","Eksperimen","Papan Bukti","Sandbox / Boss"];
+  $("#sceneName").textContent=names[state.scene];
+  $("#progressBar").style.width=`${state.scene/4*100}%`;
+  $$(".scene").forEach(s=>s.classList.toggle("active",+s.dataset.scene===state.scene));
+  $$(".step").forEach(s=>s.classList.toggle("active",+s.dataset.go===state.scene));
+  $("#prevBtn").disabled=state.scene===0;
+  $("#nextBtn").textContent=state.scene===4?"Ulang dari Awal ↺":"Lanjut →";
+}
+function goScene(n){
+  if(n>4)n=0;if(n<0)n=0;state.scene=n;renderTop();tone(590,.045);
+}
+function initSteps(){
+  $$(".step").forEach(b=>b.addEventListener("click",()=>goScene(+b.dataset.go)));
+  $("#prevBtn").addEventListener("click",()=>goScene(state.scene-1));
+  $("#nextBtn").addEventListener("click",()=>goScene(state.scene+1));
+  $("#startMission").addEventListener("click",()=>goScene(1));
+}
+function initTabs(){
+  $$(".tab").forEach(b=>b.addEventListener("click",()=>{
+    $$(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+    $$(".tabPane").forEach(x=>x.classList.remove("active"));$("#"+b.dataset.tab+"Pane").classList.add("active");tone(560,.04);
+  }));
+}
+function initButtons(){
+  $("#checkObs").addEventListener("click",checkObservation);$("#replayExp").addEventListener("click",animateExperiment);
+  $("#checkBoard").addEventListener("click",checkBoard);$("#resetMix").addEventListener("click",resetMix);$("#testMix").addEventListener("click",testMix);
+  $("#newBoss").addEventListener("click",newBoss);$("#checkBoss").addEventListener("click",checkBoss);
+  $("#fullscreenBtn").addEventListener("click",async()=>{try{document.fullscreenElement?await document.exitFullscreen():await document.documentElement.requestFullscreen()}catch(e){toast("Fullscreen diblokir browser.")}});
+  $("#soundBtn").addEventListener("click",()=>{state.sound=!state.sound;$("#soundBtn").textContent=state.sound?"♪":"×♪";toast(state.sound?"Suara aktif":"Suara dimatikan")});
+}
 
-                // Gambar Latar Belakang Kamera Efek Cermin
-                push();
-                translate(width, 0);
-                scale(-1, 1); 
+const dragStates=new Map();
+function sourceBankFor(el){
+  if(el._homeBank) return el._homeBank;
+  const bank=el.closest(".drop-bank") || (el.dataset.kind==="glass"?$("#glassRack"):$("#evidenceBank"));
+  el._homeBank=bank;
+  return bank;
+}
+function beginDrag(el,x,y,key){
+  if(!el || dragStates.has(key))return false;
+  const rect=el.getBoundingClientRect();
+  const ghost=el.cloneNode(true);ghost.classList.add("dragGhost");ghost.style.width=rect.width+"px";ghost.style.height=rect.height+"px";
+  document.body.appendChild(ghost);ghost.style.left=x+"px";ghost.style.top=y+"px";el.style.opacity=".25";
+  dragStates.set(key,{el,ghost,home:sourceBankFor(el),x,y});tone(430,.025);
+  return true;
+}
+function moveDrag(key,x,y){
+  const d=dragStates.get(key);if(!d)return;d.x=x;d.y=y;d.ghost.style.left=x+"px";d.ghost.style.top=y+"px";
+  $$(".dropzone").forEach(z=>z.classList.remove("over"));
+  const hit=document.elementFromPoint(x,y)?.closest(".dropzone");if(hit)hit.classList.add("over");
+}
+function endDrag(key,x,y){
+  const d=dragStates.get(key);if(!d)return false;
+  $$(".dropzone").forEach(z=>z.classList.remove("over"));
+  d.ghost.remove();d.el.style.opacity="";
+  const hit=document.elementFromPoint(x,y)?.closest(".dropzone");
+  if(hit && hit.dataset.accept===d.el.dataset.kind){
+    const existing=[...hit.children].find(c=>c.classList?.contains("draggable"));
+    if(existing && existing!==d.el){
+      const home=sourceBankFor(existing);home?.appendChild(existing);
+    }
+    hit.appendChild(d.el);navigator.vibrate?.(22);tone(670,.035);
+  } else {
+    d.home?.appendChild(d.el);
+  }
+  dragStates.delete(key);return true;
+}
+function registerDraggables(){
+  $$(".draggable").forEach(el=>{
+    if(el.dataset.dragReady)return;el.dataset.dragReady="1";
+    el.addEventListener("pointerdown",ev=>{
+      if(ev.button!==undefined && ev.button!==0)return;ev.preventDefault();el.setPointerCapture?.(ev.pointerId);
+      beginDrag(el,ev.clientX,ev.clientY,"p"+ev.pointerId);
+    });
+    el.addEventListener("pointermove",ev=>{if(dragStates.has("p"+ev.pointerId)){ev.preventDefault();moveDrag("p"+ev.pointerId,ev.clientX,ev.clientY)}});
+    const done=ev=>{if(dragStates.has("p"+ev.pointerId)){ev.preventDefault();endDrag("p"+ev.pointerId,ev.clientX,ev.clientY)}};
+    el.addEventListener("pointerup",done);el.addEventListener("pointercancel",done);
+  });
+}
 
-                const vRatio = capture.width / capture.height;
-                const cRatio = width / height;
-                let dw, dh, dx, dy;
-                if (vRatio > cRatio) {
-                    dh = height; dw = height * vRatio;
-                    dx = (width - dw) / 2; dy = 0;
-                } else {
-                    dw = width; dh = width / vRatio;
-                    dx = 0; dy = (height - dh) / 2;
-                }
-                
-                tint(200, 70, 20, 0.35); 
-                image(capture, dx, dy, dw, dh);
-                pop();
+renderObserve();renderExperiment();buildEvidenceBoard();buildSandbox();state.bossNo=0;newBoss();
+initSteps();initTabs();initButtons();renderTop();
+window.LabTaro={beginDrag,moveDrag,endDrag,dragStates,toast,tone,goScene,registerDraggables};
+})();
+</script>
 
-                // Efek Scanline Cyberpunk Grid
-                stroke(190, 100, 30, 0.04);
-                strokeWeight(1);
-                for (let i = 0; i < height; i += 6) {
-                    line(0, i, width, i);
-                }
-            }
+<script>
+(() => {
+"use strict";
+const MP_URL="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/vision_bundle.mjs";
+const WASM_URL="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm";
+const HAND_MODEL="https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+const FACE_MODEL="https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+const panel=document.getElementById("visionPanel"),video=document.getElementById("visionVideo"),canvas=document.getElementById("visionCanvas"),ctx=canvas.getContext("2d");
+const statusEl=document.getElementById("visionStatus"),exprEl=document.getElementById("expressionPill"),fpsEl=document.getElementById("fpsPill"),cursorLayer=document.getElementById("handCursorLayer");
+let mp=null,hand=null,face=null,draw=null,stream=null,running=false,meshOn=true,handControl=true,raf=0,lastHand=0,lastFace=0,lastFpsT=performance.now(),frames=0;
+const handStates=[{pinch:false,drag:false,x:0,y:0},{pinch:false,drag:false,x:0,y:0}];
 
-            drawHandsAndStrings();
-            drawParticles();
-            updateParticles();
-            updateHUD();
-
-            // Status Hubungan UI
-            if (handLandmarks.length === 2) {
-                statusEl.innerHTML = '⚡ <span class="highlight">CRADLE NYALA</span> · Energi Stabil';
-            } else if (handLandmarks.length === 1) {
-                statusEl.innerHTML = '✋ 1 Tangan Terdeteksi · Hadapkan <span class="highlight">Kedua Tangan</span>';
-            } else {
-                statusEl.innerHTML = '👋 Hubungkan <span class="highlight">Tangan Anda</span> ke Kamera';
-            }
-        }
-
-        function drawHandsAndStrings() {
-            if (!handLandmarks.length) return;
-
-            const getCoords = (lm) => ({
-                x: width - lm.x * width,
-                y: lm.y * height,
-            });
-
-            const hueBase = (frameCounter * 1.5) % 360;
-
-            for (let h = 0; h < handLandmarks.length; h++) {
-                const landmarks = handLandmarks[h];
-                const handHue = (hueBase + (h * 180)) % 360; 
-
-                for (let j = 0; j < landmarks.length; j++) {
-                    const pt = getCoords(landmarks[j]);
-                    const isTip = TIP_INDICES.includes(j);
-                    
-                    if (isTip) {
-                        const fIdx = TIP_INDICES.indexOf(j);
-                        const prev = prevPoints[h][fIdx];
-                        const velocity = dist(pt.x, pt.y, prev.x, prev.y);
-
-                        // Ledakan partikel adaptif saat tangan digerakkan cepat
-                        if (velocity > 12) {
-                            emitParticles(pt.x, pt.y, handHue, velocity * 0.15, 4);
-                        } else if (frameCounter % 2 === 0) {
-                            emitParticles(pt.x, pt.y, handHue, 0.5, 1);
-                        }
-
-                        prevPoints[h][fIdx] = { x: pt.x, y: pt.y };
-                    }
-
-                    // Render Sendi Neon Berpendar
-                    drawingContext.shadowBlur = (isTip ? 25 : 10) * CONFIG.glowIntensity;
-                    drawingContext.shadowColor = `hsla(${handHue}, 100%, 60%, 0.8)`;
-                    noStroke();
-                    fill(handHue, 90, 100, 0.9);
-                    circle(pt.x, pt.y, isTip ? 12 : 6);
-                }
-
-                // Interpolasi Linear (Lerp) untuk kelancaran gerak senar
-                for (let f = 0; f < TIP_INDICES.length; f++) {
-                    const idx = TIP_INDICES[f];
-                    const raw = getCoords(landmarks[idx]);
-                    const currentSmooth = smoothPoints[h][f];
-                    smoothPoints[h][f] = {
-                        x: lerp(currentSmooth.x, raw.x, CONFIG.stringSmooth),
-                        y: lerp(currentSmooth.y, raw.y, CONFIG.stringSmooth),
-                    };
-                }
-            }
-
-            // ---- RAJUTAN JARING CRADLE PLASMATA ----
-            if (handLandmarks.length === 2) {
-                const h1Hue = hueBase;
-                const h2Hue = (hueBase + 180) % 360;
-
-                for (let i = 0; i < TIP_INDICES.length; i++) {
-                    const p1 = smoothPoints[0][i];
-                    const p2 = smoothPoints[1][i];
-
-                    const d = dist(p1.x, p1.y, p2.x, p2.y);
-                    const mixHue = lerp(h1Hue, h2Hue, 0.5);
-
-                    // Pengaturan ketebalan & pendaran tali plasma bermuatan listrik
-                    drawingContext.shadowBlur = 30 * CONFIG.glowIntensity;
-                    drawingContext.shadowColor = `hsla(${mixHue}, 100%, 50%, 0.65)`;
-                    stroke(mixHue, 95, 100, 0.85);
-                    strokeWeight(map(d, 50, 600, 6, 1.5, true));
-                    
-                    // Membuat efek senar bergetar (sinusoidal wave)
-                    noFill();
-                    beginShape();
-                    const segments = 12;
-                    for (let s = 0; s <= segments; s++) {
-                        let t = s / segments;
-                        let sx = lerp(p1.x, p2.x, t);
-                        let sy = lerp(p1.y, p2.y, t);
-                        
-                        let angle = atan2(p2.y - p1.y, p2.x - p1.x) + HALF_PI;
-                        let wave = sin(t * PI + frameCounter * 0.3) * 6 * sin(frameCounter * 0.04);
-                        sx += cos(angle) * wave;
-                        sy += sin(angle) * wave;
-                        vertex(sx, sy);
-                    }
-                    endShape();
-
-                    // Inti Energi Mengalir (Beads Tracker)
-                    let beadProgress = (frameCounter * 0.015 + (i * 0.2)) % 1.0;
-                    let bx = lerp(p1.x, p2.x, beadProgress);
-                    let by = lerp(p1.y, p2.y, beadProgress);
-                    
-                    drawingContext.shadowBlur = 20;
-                    drawingContext.shadowColor = '#ffffff';
-                    fill(0, 0, 100, 1);
-                    circle(bx, by, 8);
-
-                    // Anyaman Silang Otomatis (Cross Weave)
-                    const nextIdx = (i + 1) % TIP_INDICES.length;
-                    const p2next = smoothPoints[1][nextIdx];
-                    
-                    stroke((mixHue + 40) % 360, 90, 90, 0.3);
-                    strokeWeight(1);
-                    line(p1.x, p1.y, p2next.x, p2next.y);
-                }
-            }
-            drawingContext.shadowBlur = 0;
-        }
-
-        function updateHUD() {
-            const count = handLandmarks.length;
-            if (count >= 1) {
-                hudHand1.textContent = `ONLINE`;
-                hudHand1.style.color = "#00f0ff";
-            } else {
-                hudHand1.textContent = '—';
-                hudHand1.style.color = "#fff";
-            }
-            
-            if (count >= 2) {
-                hudHand2.textContent = `ONLINE`;
-                hudHand2.style.color = "#ff0077";
-            } else {
-                hudHand2.textContent = '—';
-                hudHand2.style.color = "#fff";
-            }
-
-            hudStrings.textContent = count === 2 ? "15 JALUR PLASMA" : count === 1 ? "0 REAKSI" : "0";
-        }
-
-        function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
-        }
-    </script>
+function setStatus(s){statusEl.textContent=s}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function scoreMap(result){
+  const arr=result?.faceBlendshapes?.[0]?.categories || [];return Object.fromEntries(arr.map(x=>[x.categoryName,x.score]));
+}
+function expressionFrom(result){
+  const s=scoreMap(result), smile=((s.mouthSmileLeft||0)+(s.mouthSmileRight||0))/2, jaw=s.jawOpen||0, blink=Math.max(s.eyeBlinkLeft||0,s.eyeBlinkRight||0), brow=s.browInnerUp||0;
+  if(smile>.42)return ["😊","senyum"]; if(jaw>.55)return ["😮","mulut terbuka"]; if(blink>.58)return ["😉","kedip"]; if(brow>.48)return ["🤔","alis terangkat"]; return ["🙂","netral"];
+}
+function cursorEl(i){
+  let el=document.getElementById("handCursor"+i);
+  if(!el){el=document.createElement("div");el.id="handCursor"+i;el.className="handCursor";cursorLayer.appendChild(el)}
+  return el;
+}
+function removeExtraCursors(n){for(let i=n;i<2;i++)document.getElementById("handCursor"+i)?.remove()}
+function interactiveAt(x,y){
+  const e=document.elementFromPoint(x,y);return e?.closest(".hand-draggable,.ai-clickable,.effect-card,.experiment-card,.chip,.tab,.step,.btn,.iconBtn");
+}
+function processHandControl(result){
+  const hands=result?.landmarks||[];removeExtraCursors(hands.length);
+  hands.slice(0,2).forEach((lm,i)=>{
+    const tip=lm[8],thumb=lm[4];if(!tip||!thumb)return;
+    const rawX=(1-tip.x)*innerWidth,rawY=tip.y*innerHeight,hs=handStates[i];
+    hs.x=hs.x*.58+rawX*.42;hs.y=hs.y*.58+rawY*.42;
+    const c=cursorEl(i);c.style.left=hs.x+"px";c.style.top=hs.y+"px";
+    const pinch=dist(tip,thumb)<.055;c.classList.toggle("pinching",pinch);
+    const key="h"+i;
+    if(pinch && !hs.pinch){
+      const target=interactiveAt(hs.x,hs.y);
+      if(target?.classList.contains("hand-draggable")){
+        hs.drag=window.LabTaro.beginDrag(target,hs.x,hs.y,key);
+      }else if(target){
+        target.click();navigator.vibrate?.(18);
+      }
+    }
+    if(pinch && hs.drag)window.LabTaro.moveDrag(key,hs.x,hs.y);
+    if(!pinch && hs.pinch && hs.drag){window.LabTaro.endDrag(key,hs.x,hs.y);hs.drag=false}
+    hs.pinch=pinch;
+  });
+}
+function drawResults(handRes,faceRes){
+  if(!draw)return;ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(meshOn && faceRes?.faceLandmarks?.length){
+    faceRes.faceLandmarks.forEach(lm=>{
+      draw.drawConnectors(lm,mp.FaceLandmarker.FACE_LANDMARKS_TESSELATION,{color:"rgba(94,215,255,.16)",lineWidth:1});
+      draw.drawConnectors(lm,mp.FaceLandmarker.FACE_LANDMARKS_CONTOURS,{color:"#66e3c4",lineWidth:2});
+      const sparse=lm.filter((_,i)=>i%7===0);draw.drawLandmarks(sparse,{color:"#ffd56a",radius:1.3});
+    });
+  }
+  if(handRes?.landmarks?.length){
+    handRes.landmarks.forEach(lm=>{
+      draw.drawConnectors(lm,mp.HandLandmarker.HAND_CONNECTIONS,{color:"#5ed7ff",lineWidth:3});
+      draw.drawLandmarks(lm,{color:"#ffd56a",radius:2.3});
+    });
+  }
+}
+let lastHandRes=null,lastFaceRes=null;
+async function createTask(Ctor,vision,model,opts){
+  try{return await Ctor.createFromOptions(vision,{baseOptions:{modelAssetPath:model,delegate:"GPU"},runningMode:"VIDEO",...opts})}
+  catch(e){return await Ctor.createFromOptions(vision,{baseOptions:{modelAssetPath:model,delegate:"CPU"},runningMode:"VIDEO",...opts})}
+}
+async function enableVision(){
+  if(!sessionStorage.getItem("taroVisionNotice")){
+    window.LabTaro.toast("Vision AI memproses kamera di perangkat. Aplikasi ini tidak merekam atau mengunggah video.",3300);
+    sessionStorage.setItem("taroVisionNotice","1");
+  }
+  if(running){panel.classList.add("open");return}
+  panel.classList.add("open");setStatus("Meminta izin kamera…");
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:960},height:{ideal:720},frameRate:{ideal:30,max:30}},audio:false});
+    video.srcObject=stream;await video.play();
+    canvas.width=video.videoWidth||960;canvas.height=video.videoHeight||720;
+    setStatus("Memuat MediaPipe…");
+    mp=await import(MP_URL);
+    const vision=await mp.FilesetResolver.forVisionTasks(WASM_URL);
+    setStatus("Memuat model tangan…");
+    hand=await createTask(mp.HandLandmarker,vision,HAND_MODEL,{numHands:2,minHandDetectionConfidence:.55,minHandPresenceConfidence:.5,minTrackingConfidence:.5});
+    setStatus("Memuat model wajah…");
+    try{face=await createTask(mp.FaceLandmarker,vision,FACE_MODEL,{numFaces:1,outputFaceBlendshapes:true,outputFacialTransformationMatrixes:false,minFaceDetectionConfidence:.5,minFacePresenceConfidence:.5,minTrackingConfidence:.5})}
+    catch(e){console.warn("Face model gagal:",e);face=null}
+    draw=new mp.DrawingUtils(ctx);running=true;setStatus(face?"Vision AI aktif":"Tangan aktif • wajah gagal dimuat");
+    loop();
+  }catch(err){
+    console.error(err);setStatus("Vision AI gagal");window.LabTaro.toast("Kamera/MediaPipe tidak aktif. Mode sentuh tetap bisa dipakai.",3000);
+  }
+}
+function stopVision(){
+  running=false;cancelAnimationFrame(raf);stream?.getTracks().forEach(t=>t.stop());stream=null;video.srcObject=null;panel.classList.remove("open");cursorLayer.innerHTML="";setStatus("Vision AI: belum aktif");
+}
+function loop(){
+  if(!running)return;const now=performance.now();
+  if(video.readyState>=2){
+    if(hand && now-lastHand>62){lastHand=now;try{lastHandRes=hand.detectForVideo(video,now)}catch(e){}}
+    if(face && now-lastFace>105){lastFace=now;try{lastFaceRes=face.detectForVideo(video,now);const [emo,label]=expressionFrom(lastFaceRes);exprEl.textContent=emo;exprEl.title="Indikator ekspresi visual: "+label}catch(e){}}
+    drawResults(lastHandRes,lastFaceRes);
+    if(handControl && lastHandRes)processHandControl(lastHandRes);
+    else cursorLayer.innerHTML="";
+  }
+  frames++;if(now-lastFpsT>1000){fpsEl.textContent=`${frames} fps`;frames=0;lastFpsT=now}
+  raf=requestAnimationFrame(loop);
+}
+document.getElementById("visionBtn").addEventListener("click",enableVision);
+document.getElementById("introVision").addEventListener("click",enableVision);
+document.getElementById("closeVision").addEventListener("click",stopVision);
+document.getElementById("toggleMesh").addEventListener("click",()=>{meshOn=!meshOn;document.getElementById("toggleMesh").style.opacity=meshOn?"1":".4"});
+document.getElementById("toggleHand").addEventListener("click",()=>{handControl=!handControl;document.getElementById("toggleHand").style.opacity=handControl?"1":".4";if(!handControl)cursorLayer.innerHTML=""});
+window.addEventListener("beforeunload",()=>stream?.getTracks().forEach(t=>t.stop()));
+})();
+</script>
 </body>
 </html>
