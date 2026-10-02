@@ -1,10 +1,11 @@
 <!doctype html>
+<!-- Lab Misteri Pak Taro v1 Evidence Engine — counter-remix -->
 <html lang="id">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#071d22">
-<title>Lab Misteri Pak Taro — IFP Multitouch + Vision AI</title>
+<title>Lab Misteri Pak Taro v1 — Evidence Engine</title>
 <style>
 :root{
   --bg:#061b1f; --panel:#0d2a30; --panel2:#12343b; --ink:#effcf8; --muted:#a8c9c6;
@@ -207,6 +208,43 @@ kbd{padding:2px 7px;border:1px solid var(--line);border-bottom-width:2px;border-
   .scene{padding-top:12px;padding-bottom:10px}.sceneHeader{margin-bottom:8px}.sceneHeader h2{font-size:28px}.sceneHeader p{font-size:12px}
   .vial{min-height:90px}.effect-card{min-height:72px}.expLayout,.boardLayout,.sandboxLayout{height:calc(100% - 70px)}
 }
+
+/* ===== Evidence Engine v1 additions ===== */
+.engineBadge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;
+  border:1px solid rgba(255,213,106,.34);background:rgba(255,213,106,.09);color:#ffe9a8;
+  font-size:11px;font-weight:950;letter-spacing:.08em;margin-left:8px;vertical-align:middle}
+.reasoningStrip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0 0}
+.reasonNode{border:1px solid var(--line);background:rgba(255,255,255,.035);border-radius:18px;padding:10px 12px;
+  display:grid;gap:7px;min-height:102px;transition:.18s}
+.reasonNode.good{border-color:rgba(74,222,128,.55);background:rgba(74,222,128,.07)}
+.reasonNode.bad{border-color:rgba(255,94,103,.48);background:rgba(255,94,103,.06)}
+.reasonNode b{font-size:13px}.reasonNode small{color:var(--muted);line-height:1.3}
+.reasonNode select{width:100%;min-height:42px;border-radius:12px;border:1px solid var(--line);background:#09252b;color:var(--ink);
+  padding:0 9px;font-weight:800;font-size:12px}
+.boardFooter .btn[hidden]{display:none!important}
+.boardPulse{animation:boardPulse .45s ease}@keyframes boardPulse{50%{box-shadow:0 0 0 7px rgba(255,94,103,.12)}}
+.draggable.held{opacity:.3!important;filter:saturate(.75);outline:2px solid var(--ownerColor,var(--cyan));outline-offset:2px}
+.dragGhost{border:2px solid var(--ownerColor,var(--cyan))}
+.handCursor{border-color:var(--pc,var(--cyan));box-shadow:0 0 0 8px color-mix(in srgb,var(--pc,var(--cyan)) 16%,transparent),0 0 25px color-mix(in srgb,var(--pc,var(--cyan)) 55%,transparent)}
+.handCursor.pinching{border-color:var(--gold)}
+#reasonModal{position:fixed;inset:0;z-index:170;display:grid;place-items:center;background:rgba(2,10,12,.78);backdrop-filter:blur(6px)}
+.reasonBox{width:min(900px,94vw);max-height:min(760px,88vh);overflow:auto;padding:20px;display:grid;gap:14px}
+.reasonTimeline{display:grid;gap:10px}
+.reasonStep{display:grid;grid-template-columns:56px 1fr;gap:12px;align-items:start;border:1px solid var(--line);
+  border-radius:18px;padding:12px;background:rgba(255,255,255,.035);opacity:.28;transform:translateY(8px);transition:.35s}
+.reasonStep.show{opacity:1;transform:none;border-color:rgba(102,227,196,.35)}
+.reasonNum{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:rgba(102,227,196,.14);font-weight:1000;color:var(--mint)}
+.reasonStep b{display:block;margin-bottom:4px}.reasonStep p{margin:0;color:#cfe5e1;line-height:1.45}
+.reasonActions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.codeStatus{font-size:12px;color:var(--muted);font-weight:800}
+.ownerLegend{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.ownerPill{display:inline-flex;gap:6px;align-items:center;padding:5px 9px;border-radius:999px;border:1px solid var(--line);font-size:11px;font-weight:900}
+.ownerPill i{width:10px;height:10px;border-radius:50%;background:var(--pc)}
+.bossMatrix{display:inline-flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.bossMatrix span{padding:4px 7px;border-radius:8px;background:rgba(94,215,255,.09);border:1px solid rgba(94,215,255,.18);font-size:11px;font-weight:850}
+.perfFast{color:#9fffdc}.perfSmart{color:#ffe7a0}.perfEco{color:#ffb7c7}
+@media(max-width:1050px){.reasoningStrip{grid-template-columns:1fr}.reasonNode{min-height:72px}}
+
 </style>
 </head>
 <body>
@@ -214,7 +252,7 @@ kbd{padding:2px 7px;border:1px solid var(--line);border-bottom-width:2px;border-
   <header class="topbar">
     <div class="brand">
       <div class="logo">PT</div>
-      <div><h1>Lab Misteri Pak Taro</h1><small>IFP MULTITOUCH • BERPIKIR KOMPUTASIONAL • VISION AI</small></div>
+      <div><h1>Lab Misteri Pak Taro</h1><small>EVIDENCE ENGINE v1 • IFP MULTITOUCH • VISION AI • REASONING TRACE</small></div>
     </div>
     <div class="progressBox">
       <div class="scoreRow"><span id="sceneName">Intro</span><span id="evidenceScore">Bukti 0</span></div>
@@ -304,10 +342,22 @@ kbd{padding:2px 7px;border:1px solid var(--line);border-bottom-width:2px;border-
         <div class="tokenBank card drop-bank" id="evidenceBank">
           <h3>Kartu Khasiat</h3><div class="softNote">Sentuh-seret atau gunakan pinch Vision AI.</div>
         </div>
-        <div class="mapBoard card">
-          <div><h3>Peta Misteri A–F</h3><div class="softNote">Kamu boleh memindah jawaban kapan saja sebelum mengecek.</div></div>
-          <div class="slotGrid" id="evidenceSlots"></div>
-          <div class="boardFooter"><div id="boardFeedback" class="feedback">Susun semua kartu terlebih dahulu.</div><button class="btn primary ai-clickable" id="checkBoard">Periksa Bukti</button></div>
+        <div class="mapBoard card" id="mapBoard">
+          <div>
+            <h3>Peta Misteri A–F <span class="engineBadge">EVIDENCE ENGINE</span></h3>
+            <div class="softNote">Lengkapi 3 bukti kunci dulu, lalu susun semua kartu. Sistem memeriksa konsistensi alasan, bukan sekadar tebakan.</div>
+          </div>
+          <div>
+            <div class="reasoningStrip" id="reasoningStrip"></div>
+            <div class="slotGrid" id="evidenceSlots"></div>
+          </div>
+          <div class="boardFooter">
+            <div id="boardFeedback" class="feedback">Susun bukti kunci dan peta A–F.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn ai-clickable" id="replayReasoning" hidden>▶ Putar Ulang Alasan</button>
+              <button class="btn primary ai-clickable" id="checkBoard">Periksa Konsistensi</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -338,7 +388,7 @@ kbd{padding:2px 7px;border:1px solid var(--line);border-bottom-width:2px;border-
         <div class="tabPane" id="bossPane">
           <div class="bossGrid">
             <div class="bossData card">
-              <div style="display:flex;justify-content:space-between;align-items:center"><div><b id="bossTitle">Kasus Acak #1</b><div class="softNote">Khasiat tiap gelas sudah diacak.</div></div><button class="btn ai-clickable" id="newBoss">Kasus Baru</button></div>
+              <div style="display:flex;justify-content:space-between;align-items:center"><div><b id="bossTitle">Kasus Acak #1</b><div class="softNote">Khasiat <b>dan pola campuran</b> diacak. Jangan hafal posisi huruf.</div><div class="bossMatrix" id="bossMatrix"></div></div><button class="btn ai-clickable" id="newBoss">Kasus Baru</button></div>
               <div class="bossExpRow" id="bossExperiments"></div>
               <div class="hint">Temukan isi A–F hanya dari tiga hasil percobaan.</div>
             </div>
@@ -388,10 +438,25 @@ kbd{padding:2px 7px;border:1px solid var(--line);border-bottom-width:2px;border-
 <div id="coach" class="coach" hidden></div>
 <div id="codeModal" role="dialog" aria-modal="true" aria-label="Kode di balik misteri" hidden><div class="codeBox card">
   <div class="aiRow"><b>{ } Kode di balik misteri</b><button class="iconBtn ai-clickable" id="codeClose" aria-label="Tutup">×</button></div>
-  <div class="softNote">Setiap percobaan adalah daftar gelas. Komputer menemukan gelas yang muncul di dua percobaan dengan <b>irisan himpunan</b>. Ubah kodenya lalu jalankan.</div>
+  <div class="softNote">Setiap percobaan adalah daftar gelas. Komputer menemukan gelas yang muncul di dua percobaan dengan <b>irisan himpunan</b>. Kode siswa berjalan di <b>Web Worker terisolasi</b>, sehingga loop yang macet tidak membekukan layar utama.</div>
   <textarea id="codeArea" spellcheck="false" aria-label="Editor kode"></textarea>
-  <div class="aiRow"><button class="btn primary ai-clickable" id="codeRun">▶ Jalankan</button><span class="softNote">Tersedia: log() dan percobaan</span></div>
+  <div class="aiRow"><button class="btn primary ai-clickable" id="codeRun">▶ Jalankan Aman</button><span class="codeStatus" id="codeStatus">Web Worker • timeout 600 ms • tanpa akses DOM</span></div>
   <pre id="codeOut" aria-live="polite"></pre></div></div>
+
+<div id="reasonModal" role="dialog" aria-modal="true" aria-label="Putar ulang jejak penalaran" hidden>
+  <div class="reasonBox card">
+    <div class="aiRow">
+      <div><b style="font-size:22px">🧠 Jejak Penalaran</b><div class="softNote">Bukan hanya jawabannya—lihat jalan berpikir yang membuat jawaban itu masuk akal.</div></div>
+      <button class="iconBtn ai-clickable" id="reasonClose" aria-label="Tutup">×</button>
+    </div>
+    <div class="reasonTimeline" id="reasonTimeline"></div>
+    <div class="reasonActions">
+      <button class="btn ai-clickable" id="reasonRestart">↻ Ulangi</button>
+      <button class="btn primary ai-clickable" id="reasonDone">Selesai</button>
+    </div>
+  </div>
+</div>
+
 <div id="handCursorLayer"></div>
 <div class="toast" id="toast"></div>
 
@@ -410,10 +475,15 @@ const fixedMap = {A:"double",B:"leaf",C:"white",D:"water",E:"black",F:"wavy"};
 const experiments = [
   {id:1,mix:["A","B","C"]},{id:2,mix:["A","D","E"]},{id:3,mix:["C","D","F"]}
 ];
+const keyReasoning = [
+  {id:"r12", pair:"P1 ∩ P2", glass:"A", truth:"double", prompt:"Perubahan apa yang sama pada P1 dan P2?"},
+  {id:"r13", pair:"P1 ∩ P3", glass:"C", truth:"white", prompt:"Perubahan apa yang sama pada P1 dan P3?"},
+  {id:"r23", pair:"P2 ∩ P3", glass:"D", truth:"none", prompt:"Apakah P2 dan P3 punya perubahan yang sama?"}
+];
 const state = {
   scene:0, evidence:0, sound:true, activeEffect:"double", activeExperiment:0,
   userObs:[new Set(),new Set(),new Set()], obsSolved:new Set(), boardSolved:false,
-  sandboxPred:new Set(), bossMap:null,bossNo:1, seen:new Set(["double"]), bossWon:false
+  sandboxPred:new Set(), bossMap:null,bossExperiments:null,bossNo:1, seen:new Set(["double"]), bossWon:false, boardAttempts:0
 };
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -481,6 +551,26 @@ function flowerSVG(active=[], extraClass=""){
   </svg>`;
 }
 
+
+let reasonTimers=[];
+function reasonReplaySteps(){
+  return [
+    {title:"Bandingkan P1 dan P2",text:"Gelas yang sama adalah A. Perubahan yang sama pada kedua bunga adalah kelopak berlapis. Jadi A → kelopak berlapis."},
+    {title:"Bandingkan P1 dan P3",text:"Gelas yang sama adalah C. Perubahan yang sama adalah kelopak menjadi putih. Jadi C → kelopak putih."},
+    {title:"Bandingkan P2 dan P3",text:"Gelas yang sama adalah D, tetapi tidak ada perubahan bunga yang sama. Berarti D tidak memberi efek → AIR."},
+    {title:"Gunakan eliminasi",text:"Setelah A, C, dan D diketahui, perubahan yang tersisa dipasangkan dengan gelas yang hanya muncul pada satu percobaan: B → daun, E → tengah hitam, F → tangkai bergelombang."},
+    {title:"Uji balik",text:"Masukkan semua pasangan ke P1, P2, dan P3. Ketiganya menghasilkan bunga yang sama seperti data. Kesimpulan konsisten."}
+  ];
+}
+function playReasoning(){
+  reasonTimers.forEach(clearTimeout);reasonTimers=[];
+  $("#reasonTimeline").innerHTML=reasonReplaySteps().map((x,i)=>`<div class="reasonStep" data-rstep="${i}">
+    <div class="reasonNum">${i+1}</div><div><b>${x.title}</b><p>${x.text}</p></div></div>`).join("");
+  $("#reasonModal").hidden=false;
+  $$("#reasonTimeline .reasonStep").forEach((el,i)=>reasonTimers.push(setTimeout(()=>{el.classList.add("show");tone(470+i*45,.035)},180+i*650)));
+}
+function closeReasoning(){reasonTimers.forEach(clearTimeout);reasonTimers=[];$("#reasonModal").hidden=true}
+
 function renderObserve(){
   $("#baseFlower").innerHTML=flowerSVG([]);
   $("#demoFlower").innerHTML=flowerSVG([state.activeEffect]);
@@ -538,27 +628,59 @@ function animateExperiment(){
 
 function tokenHTML(t,kind="effect"){ return `<div class="${kind==="glass"?"glass-token":"evidence-token"} draggable hand-draggable" data-kind="${kind}" data-value="${t.id||t}" tabindex="0">
   <span class="tokenDot">${kind==="glass"?"🧪":t.icon}</span><span>${kind==="glass"?(t.id||t):t.name}</span></div>`; }
+function buildReasoningStrip(){
+  const opts=[`<option value="">— pilih bukti —</option>`,
+    ...effects.map(e=>`<option value="${e.id}">${e.icon} ${e.name}</option>`),
+    `<option value="none">∅ Tidak ada perubahan yang sama</option>`].join("");
+  $("#reasoningStrip").innerHTML=keyReasoning.map(r=>`<div class="reasonNode" data-reason="${r.id}">
+    <b>${r.pair} → Gelas ${r.glass}</b>
+    <small>${r.prompt}</small>
+    <select class="reasonSelect ai-clickable" data-reason="${r.id}" aria-label="${r.prompt}">${opts}</select>
+  </div>`).join("");
+  $$(".reasonSelect").forEach(sel=>sel.addEventListener("change",()=>{sel.closest(".reasonNode").classList.remove("good","bad");tone(500,.03)}));
+}
+function reasoningOK(mark=false){
+  let ok=true;
+  keyReasoning.forEach(r=>{
+    const node=$(`.reasonNode[data-reason="${r.id}"]`),sel=node?.querySelector("select");
+    const good=sel?.value===r.truth; ok&&=good;
+    if(mark){node?.classList.toggle("good",good);node?.classList.toggle("bad",!good)}
+  });
+  return ok;
+}
 function buildEvidenceBoard(){
   const bank=$("#evidenceBank");
   bank.querySelectorAll(".evidence-token").forEach(x=>x.remove());
   allTokens.forEach(t=>bank.insertAdjacentHTML("beforeend",tokenHTML(t)));
+  buildReasoningStrip();
   $("#evidenceSlots").innerHTML="ABCDEF".split("").map(g=>`<div class="glass-slot dropzone" data-accept="effect" data-glass="${g}">
     <div class="slotLabel">Gelas ${g}</div><div class="slotSub">Seret satu kartu ke sini</div></div>`).join("");
+  $("#replayReasoning").hidden=true;
+  state.boardAttempts=0;
   registerDraggables();
 }
 function checkBoard(){
   const slots=$$("#evidenceSlots .glass-slot"); let filled=0, correct=0;
   slots.forEach(s=>{
-    s.classList.remove("good","bad"); const t=s.querySelector(".evidence-token");
-    if(t){filled++; if(t.dataset.value===fixedMap[s.dataset.glass]){correct++;s.classList.add("good")}else s.classList.add("bad")}
+    s.classList.remove("good","bad");
+    const t=s.querySelector(".evidence-token");
+    if(t){filled++; if(t.dataset.value===fixedMap[s.dataset.glass])correct++}
   });
-  if(filled<6){$("#boardFeedback").textContent=`Baru ${filled}/6 slot terisi.`;badSound();return}
-  if(correct===6){
-    $("#boardFeedback").textContent="Semua bukti konsisten. Gelas air berhasil ditemukan!";
+  if(filled<6){$("#boardFeedback").textContent=`Peta belum lengkap: ${filled}/6 slot terisi.`;badSound();return}
+  state.boardAttempts++;
+  const rOK=reasoningOK(state.boardAttempts>=2);
+  const mapOK=correct===6;
+  if(rOK && mapOK){
+    slots.forEach(s=>s.classList.add("good"));
+    $("#boardFeedback").textContent="Konsisten! Bukti kunci dan seluruh peta saling mendukung.";
+    $("#replayReasoning").hidden=false;
     if(!state.boardSolved){state.boardSolved=true;addEvidence(3)}
     successSound();confetti(55);
   }else{
-    $("#boardFeedback").textContent=`${correct}/6 pasangan sudah konsisten. Periksa lagi pola antarpencobaan.`;
+    $("#mapBoard").classList.remove("boardPulse");void $("#mapBoard").offsetWidth;$("#mapBoard").classList.add("boardPulse");
+    $("#boardFeedback").textContent=state.boardAttempts<2
+      ?"Belum konsisten. Jangan tukar kartu acak—kembali ke 3 bukti kunci di atas."
+      :"Masih ada hubungan yang bertentangan. Node merah menunjukkan bukti kunci yang perlu diperiksa; peta A–F tidak membocorkan slot mana yang salah.";
     badSound();
   }
 }
@@ -596,15 +718,27 @@ function testMix(){
 }
 
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function generateBossExperiments(){
+  // Enam signature unik. Setiap percobaan tetap memuat 3 gelas, tetapi huruf yang menempati tiap signature diacak.
+  // Karena signature tiap gelas unik, lima efek yang terlihat + satu signature yang hilang memberi satu solusi yang konsisten untuk AIR.
+  const signatures=shuffle(["110","100","101","011","010","001"]);
+  const letters="ABCDEF".split(""), mixes=[[],[],[]];
+  letters.forEach((g,i)=>signatures[i].split("").forEach((v,p)=>{if(v==="1")mixes[p].push(g)}));
+  return mixes.map((mix,i)=>({id:i+1,mix:shuffle(mix)}));
+}
 function newBoss(){
   state.bossNo++;
+  state.bossWon=false;
   const vals=shuffle(allTokens.map(x=>x.id));
   state.bossMap=Object.fromEntries("ABCDEF".split("").map((g,i)=>[g,vals[i]]));
+  state.bossExperiments=generateBossExperiments();
   $("#bossTitle").textContent=`Kasus Acak #${state.bossNo}`;
-  $("#bossExperiments").innerHTML=experiments.map(e=>`<div class="bossExp"><div><b>P${e.id}</b> • ${e.mix.join(" + ")}</div><div>${flowerSVG(effectIdsForMix(e.mix,state.bossMap))}</div></div>`).join("");
+  $("#bossMatrix").innerHTML=state.bossExperiments.map(e=>`<span>P${e.id}: ${e.mix.join(" + ")}</span>`).join("");
+  $("#bossExperiments").innerHTML=state.bossExperiments.map(e=>`<div class="bossExp"><div><b>P${e.id}</b> • ${e.mix.join(" + ")}</div><div>${flowerSVG(effectIdsForMix(e.mix,state.bossMap))}</div></div>`).join("");
   $("#bossBank").innerHTML=allTokens.map(t=>tokenHTML(t)).join("");
   $("#bossSlots").innerHTML="ABCDEF".split("").map(g=>`<div class="glass-slot dropzone" data-accept="effect" data-glass="${g}"><div class="slotLabel">${g}</div><div class="slotSub">?</div></div>`).join("");
   registerDraggables();
+  renderTop();
 }
 function checkBoss(){
   const slots=$$("#bossSlots .glass-slot");let filled=0,correct=0;
@@ -642,15 +776,29 @@ function initTabs(){
     $$(".tabPane").forEach(x=>x.classList.remove("active"));$("#"+b.dataset.tab+"Pane").classList.add("active");tone(560,.04);
   }));
 }
+
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("#reasonModal").hidden)closeReasoning();if(!$("#codeModal").hidden)$("#codeModal").hidden=true}});
+$("#reasonModal").addEventListener("click",e=>{if(e.target===$("#reasonModal"))closeReasoning()});
+
 function initButtons(){
   $("#checkObs").addEventListener("click",checkObservation);$("#replayExp").addEventListener("click",animateExperiment);
   $("#checkBoard").addEventListener("click",checkBoard);$("#resetMix").addEventListener("click",resetMix);$("#testMix").addEventListener("click",testMix);
   $("#newBoss").addEventListener("click",newBoss);$("#checkBoss").addEventListener("click",checkBoss);
+  $("#replayReasoning").addEventListener("click",playReasoning);$("#reasonRestart").addEventListener("click",playReasoning);
+  $("#reasonClose").addEventListener("click",closeReasoning);$("#reasonDone").addEventListener("click",closeReasoning);
   $("#fullscreenBtn").addEventListener("click",async()=>{try{document.fullscreenElement?await document.exitFullscreen():await document.documentElement.requestFullscreen()}catch(e){toast("Fullscreen diblokir browser.")}});
   $("#soundBtn").addEventListener("click",()=>{state.sound=!state.sound;$("#soundBtn").textContent=state.sound?"♪":"×♪";toast(state.sound?"Suara aktif":"Suara dimatikan")});
 }
 
 const dragStates=new Map();
+const dragOwners=new WeakMap();
+const playerColors=["#5ed7ff","#ff6f91","#ffd56a","#8df0a9","#c8a7ff"];
+function ownerColor(key){
+  if(String(key).toLowerCase().includes("left"))return playerColors[0];
+  if(String(key).toLowerCase().includes("right"))return playerColors[1];
+  const n=[...String(key)].reduce((a,c)=>a+c.charCodeAt(0),0);
+  return playerColors[n%playerColors.length];
+}
 function sourceBankFor(el){
   if(el._homeBank) return el._homeBank;
   const bank=el.closest(".drop-bank") || (el.dataset.kind==="glass"?$("#glassRack"):$("#evidenceBank"));
@@ -659,10 +807,14 @@ function sourceBankFor(el){
 }
 function beginDrag(el,x,y,key){
   if(!el || dragStates.has(key))return false;
-  const rect=el.getBoundingClientRect();
-  const ghost=el.cloneNode(true);ghost.classList.add("dragGhost");ghost.style.width=rect.width+"px";ghost.style.height=rect.height+"px";
-  document.body.appendChild(ghost);ghost.style.left=x+"px";ghost.style.top=y+"px";el.style.opacity=".25";
-  dragStates.set(key,{el,ghost,home:sourceBankFor(el),x,y});tone(430,.025);
+  const currentOwner=dragOwners.get(el);
+  if(currentOwner && currentOwner!==key){tone(180,.025);return false}
+  dragOwners.set(el,key);
+  const color=ownerColor(key),rect=el.getBoundingClientRect();
+  el.classList.add("held");el.style.setProperty("--ownerColor",color);
+  const ghost=el.cloneNode(true);ghost.classList.add("dragGhost");ghost.style.width=rect.width+"px";ghost.style.height=rect.height+"px";ghost.style.setProperty("--ownerColor",color);
+  document.body.appendChild(ghost);ghost.style.left=x+"px";ghost.style.top=y+"px";
+  dragStates.set(key,{el,ghost,home:sourceBankFor(el),x,y,color});tone(430,.025);
   return true;
 }
 function moveDrag(key,x,y){
@@ -673,7 +825,7 @@ function moveDrag(key,x,y){
 function endDrag(key,x,y){
   const d=dragStates.get(key);if(!d)return false;
   d.over?.classList.remove("over");
-  d.ghost.remove();d.el.style.opacity="";
+  d.ghost.remove();d.el.classList.remove("held");d.el.style.removeProperty("--ownerColor");dragOwners.delete(d.el);
   const hit=document.elementFromPoint(x,y)?.closest(".dropzone");
   if(hit && hit.dataset.accept===d.el.dataset.kind){
     const existing=[...hit.children].find(c=>c.classList?.contains("draggable"));
@@ -686,7 +838,7 @@ function endDrag(key,x,y){
   }
   dragStates.delete(key);return true;
 }
-function cancelDrag(key){const d=dragStates.get(key);if(!d)return;d.over?.classList.remove("over");d.ghost.remove();d.el.style.opacity="";dragStates.delete(key)}
+function cancelDrag(key){const d=dragStates.get(key);if(!d)return;d.over?.classList.remove("over");d.ghost.remove();d.el.classList.remove("held");d.el.style.removeProperty("--ownerColor");dragOwners.delete(d.el);dragStates.delete(key)}
 function registerDraggables(){
   $$(".draggable").forEach(el=>{
     if(el.dataset.dragReady)return;el.dataset.dragReady="1";
@@ -702,7 +854,7 @@ function registerDraggables(){
 
 renderObserve();renderExperiment();buildEvidenceBoard();buildSandbox();state.bossNo=0;newBoss();
 initSteps();initTabs();initButtons();renderTop();
-window.LabTaro={experiments:experiments.map(e=>e.mix),cancelDrag,beginDrag,moveDrag,endDrag,dragStates,toast,tone,goScene,registerDraggables};
+window.LabTaro={experiments:experiments.map(e=>e.mix),cancelDrag,beginDrag,moveDrag,endDrag,dragStates,toast,tone,goScene,registerDraggables,ownerColor};
 })();
 </script>
 
@@ -728,7 +880,7 @@ function scores(res){const a=res?.faceBlendshapes?.[0]?.categories||[],s=Object.
 function expressionOf(v){if(v.smile>.42)return["😊","senyum"];if(v.jaw>.55)return["😮","mulut terbuka"];if(v.blink>.58)return["😉","kedip"];if(v.brow>.48)return["🤔","alis terangkat"];return["🙂","netral"]}
 function onFace(res){const v=scores(res);EXPR.forEach(([k])=>{$("v_"+k).textContent=v[k].toFixed(2);$("b_"+k).style.width=clamp(v[k],0,1)*100+"%"});const[e,l]=expressionOf(v);exprEl.textContent=e;exprEl.title="Skor ekspresi visual: "+l}
 
-function cursorEl(k){let el=document.getElementById("hc"+k);if(!el){el=document.createElement("div");el.id="hc"+k;el.className="handCursor";cursorLayer.appendChild(el)}return el}
+function cursorEl(k){let el=document.getElementById("hc"+k);if(!el){el=document.createElement("div");el.id="hc"+k;el.className="handCursor";el.style.setProperty("--pc",LT().ownerColor(k));cursorLayer.appendChild(el)}return el}
 function interactiveAt(x,y){return document.elementFromPoint(x,y)?.closest(".hand-draggable,.ai-clickable,.effect-card,.experiment-card,.chip,.tab,.step,.btn,.iconBtn")}
 function release(k){const h=HS[k];if(!h)return;if(h.drag)LT().cancelDrag("h"+k);h.hover?.classList.remove("handHover");document.getElementById("hc"+k)?.remove();delete HS[k]}   // tangan hilang → batalkan seretan, tidak ada hantu menggantung
 function onHand(res){
@@ -755,19 +907,27 @@ function tickCursors(){   // dijalankan tiap frame: gerak halus walau inferensi 
 }
 function drawResults(){   // hanya saat ada hasil baru; garis wajah ringan (kontur, bukan 2500+ garis tesselation)
   ctx.clearRect(0,0,canvas.width,canvas.height);const big=panel.classList.contains("big");
-  if(big&&meshOn)lastFaceRes?.faceLandmarks?.forEach(lm=>{draw.drawConnectors(lm,mp.FaceLandmarker.FACE_LANDMARKS_CONTOURS,{color:"#66e3c4",lineWidth:2});draw.drawLandmarks(lm.filter((_,i)=>i%9===0),{color:"#ffd56a",radius:1.3})});
+  if(big&&meshOn)lastFaceRes?.faceLandmarks?.forEach(lm=>{const stride=msAvg>55?18:msAvg>34?12:8;draw.drawConnectors(lm,mp.FaceLandmarker.FACE_LANDMARKS_CONTOURS,{color:"#66e3c4",lineWidth:2});draw.drawLandmarks(lm.filter((_,i)=>i%stride===0),{color:"#ffd56a",radius:1.3})});
   lastHandRes?.landmarks?.forEach(lm=>{draw.drawConnectors(lm,mp.HandLandmarker.HAND_CONNECTIONS,{color:"#5ed7ff",lineWidth:big?3:6});if(big)draw.drawLandmarks(lm,{color:"#ffd56a",radius:2.3})});
 }
 function loop(now){
   if(!running)return;raf=requestAnimationFrame(loop);
   if(video.readyState>=2&&!document.hidden){
+    const dragging=LT().dragStates.size>0;
+    const big=panel.classList.contains("big");
+    const handGap=clamp(msAvg*(dragging?1.25:1.7),dragging?42:52,150);
+    const faceGap=(big?clamp(msAvg*5,150,520):850)+(dragging?260:0);
     let did=false;
-    if(hand&&handOn&&now-lastHand>Math.max(50,msAvg*1.6)){lastHand=now;did=true;const t0=performance.now();try{lastHandRes=hand.detectForVideo(video,now);onHand(lastHandRes)}catch(e){}msAvg=msAvg*.9+(performance.now()-t0)*.1;infer++;dirty=true}
-    if(!did&&face&&faceOn&&now-lastFace>130){lastFace=now;try{lastFaceRes=face.detectForVideo(video,now);onFace(lastFaceRes)}catch(e){}infer++;dirty=true}   // tangan dan wajah bergantian, tidak di frame yang sama
+    if(hand&&handOn&&now-lastHand>handGap){lastHand=now;did=true;const t0=performance.now();try{lastHandRes=hand.detectForVideo(video,now);onHand(lastHandRes)}catch(e){}msAvg=msAvg*.9+(performance.now()-t0)*.1;infer++;dirty=true}
+    if(!did&&face&&faceOn&&now-lastFace>faceGap){lastFace=now;try{lastFaceRes=face.detectForVideo(video,now);onFace(lastFaceRes)}catch(e){}infer++;dirty=true}
     if(dirty){drawResults();dirty=false}
     tickCursors();
   }
-  if(now-lastFps>1000){fpsEl.textContent=`${infer}/s · ${msAvg.toFixed(0)} ms`;infer=0;lastFps=now}
+  if(now-lastFps>1000){
+    const mode=msAvg<30?["FAST","perfFast"]:msAvg<52?["SMART","perfSmart"]:["ECO","perfEco"];
+    fpsEl.className=`pill ${mode[1]}`;fpsEl.textContent=`${mode[0]} · ${infer}/s · ${msAvg.toFixed(0)} ms`;
+    infer=0;lastFps=now;
+  }
 }
 async function loadMP(){for(const v of MP_VERS){const base=`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${v}`;try{const m=await import(base+"/vision_bundle.mjs");return{m,fs:await m.FilesetResolver.forVisionTasks(base+"/wasm")}}catch(e){console.warn("MediaPipe",v,e)}}throw new Error("mediapipe")}
 async function createTask(C,fs,model,o){try{return await C.createFromOptions(fs,{baseOptions:{modelAssetPath:model,delegate:"GPU"},runningMode:"VIDEO",...o})}catch(e){return await C.createFromOptions(fs,{baseOptions:{modelAssetPath:model,delegate:"CPU"},runningMode:"VIDEO",...o})}}
@@ -808,8 +968,37 @@ log("P2 ∩ P3 =", irisan(percobaan[1], percobaan[2]));
 // Tantangan: gelas mana yang muncul di dua percobaan? Apa efek bunganya?`;
 $("codeBtn").addEventListener("click",()=>{if(!$("codeArea").value)$("codeArea").value=STARTER;$("codeModal").hidden=false});
 $("codeClose").addEventListener("click",()=>{$("codeModal").hidden=true});
-$("codeRun").addEventListener("click",()=>{const out=[],log=(...a)=>out.push(a.map(x=>typeof x==="string"?x:JSON.stringify(x)).join(" "));
-  try{new Function("log","percobaan",$("codeArea").value)(log,LT().experiments)}catch(e){out.push("⚠ "+e.message)}$("codeOut").textContent=out.join("\n")||"(tidak ada keluaran)"});
+function runStudentCode(code,experiments){
+  return new Promise(resolve=>{
+    const workerSource=`
+      self.onmessage = (e) => {
+        const {code, experiments} = e.data;
+        const out = [];
+        const safe = v => { try { return typeof v === "string" ? v : JSON.stringify(v); } catch { return String(v); } };
+        const log = (...a) => out.push(a.map(safe).join(" "));
+        try {
+          try { self.fetch=undefined; self.XMLHttpRequest=undefined; self.WebSocket=undefined; self.importScripts=undefined; } catch {}
+          const fn = new Function("log","percobaan","fetch","XMLHttpRequest","WebSocket","importScripts",
+            '"use strict";\\n' + code);
+          fn(log, Object.freeze(experiments.map(x=>Object.freeze([...x]))), undefined, undefined, undefined, undefined);
+          self.postMessage({ok:true,out});
+        } catch(err) { self.postMessage({ok:false,out:[...out,"⚠ "+(err?.message||String(err))]}); }
+      };`;
+    const url=URL.createObjectURL(new Blob([workerSource],{type:"text/javascript"}));
+    const w=new Worker(url);let done=false;
+    const finish=res=>{if(done)return;done=true;clearTimeout(timer);w.terminate();URL.revokeObjectURL(url);resolve(res)};
+    const timer=setTimeout(()=>finish({ok:false,out:["⏱ Program dihentikan setelah 600 ms. Cek kemungkinan loop tanpa akhir."]}),600);
+    w.onmessage=e=>finish(e.data);w.onerror=e=>finish({ok:false,out:["⚠ "+(e.message||"Kesalahan Worker")]});
+    w.postMessage({code,experiments});
+  });
+}
+$("codeRun").addEventListener("click",async()=>{
+  const btn=$("codeRun");btn.disabled=true;$("codeStatus").textContent="Menjalankan di Worker terisolasi…";$("codeOut").textContent="…";
+  const res=await runStudentCode($("codeArea").value,LT().experiments);
+  $("codeOut").textContent=(res.out||[]).join("\\n")||"(tidak ada keluaran)";
+  $("codeStatus").textContent=res.ok?"Selesai • Worker ditutup otomatis":"Dihentikan aman • aplikasi utama tetap berjalan";
+  btn.disabled=false;
+});
 })();
 </script>
 </body>
